@@ -138,12 +138,12 @@ def ask_add_to_claude_md(base_dir):
 
 **使用 PFC 系統時**（複雜多步驟任務、用戶明確要求）：
 
-1. **透過 Task tool 派發 agent** - 使用 subagent_type 指定 agent
+1. **必須透過 Task tool 派發 agent** - Claude Code 是「調度者」，不是「執行者」
 2. **完整執行循環**：
-   - 派發 `pfc` agent → 規劃任務、分解子任務
-   - 派發 `executor` agent → 執行各子任務
-   - 派發 `critic` agent → 驗證結果
-   - 派發 `memory` agent → 存經驗
+   - 派發 `pfc` agent 規劃任務
+   - 派發 `executor` agent 執行子任務
+   - 派發 `critic` agent 驗證結果
+   - 派發 `memory` agent 存經驗
 3. **auto-compact 後必須檢查任務進度** - 讀取 DB 恢復狀態
 
 **禁止行為（使用 PFC 時）：**
