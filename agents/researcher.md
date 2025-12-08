@@ -31,6 +31,10 @@ import sys
 import os
 sys.path.insert(0, os.path.expanduser('~/.claude/neuromorphic'))
 
+# 先查看 API 簽名（避免參數錯誤）
+from servers.memory import SCHEMA as MEMORY_SCHEMA
+print(MEMORY_SCHEMA)
+
 from servers.memory import store_memory
 
 store_memory(
@@ -42,6 +46,15 @@ store_memory(
     importance=7
 )
 ```
+
+### ⚠️ 常見參數錯誤提醒
+
+| 操作 | 正確寫法 | 錯誤寫法 |
+|------|----------|----------|
+| 儲存記憶 | `store_memory(category, content, title=None, project=None, importance=5)` | - |
+| 搜尋記憶 | `search_memory(query, project=None, category=None, limit=5)` | - |
+
+> 不確定時執行：`print(MEMORY_SCHEMA)`
 
 ## 輸出格式
 

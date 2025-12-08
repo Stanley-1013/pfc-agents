@@ -23,6 +23,11 @@ import sys
 import os
 sys.path.insert(0, os.path.expanduser('~/.claude/neuromorphic'))
 
+# 先查看 API 簽名（避免參數錯誤）
+from servers.tasks import SCHEMA as TASKS_SCHEMA
+from servers.memory import SCHEMA as MEMORY_SCHEMA
+print(TASKS_SCHEMA)
+
 from servers.memory import search_memory
 
 # ⭐ 查詢相關品質標準和最佳實踐
@@ -36,6 +41,15 @@ if standards or patterns:
         print(f"- **{m['title']}**: {m['content'][:100]}...")
     print("請依據上述標準進行驗證。")
 ```
+
+### ⚠️ 常見參數錯誤提醒
+
+| 操作 | 正確寫法 | 錯誤寫法 |
+|------|----------|----------|
+| 搜尋記憶 | `search_memory(query, project=None, category=None, limit=5)` | - |
+| 標記驗證 | `mark_validated(task_id=xxx, status='approved')` | ✓ |
+
+> 不確定時執行：`print(MEMORY_SCHEMA)`
 
 ## 評估框架
 

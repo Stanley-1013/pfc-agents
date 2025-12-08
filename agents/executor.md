@@ -39,6 +39,11 @@ import sys
 import os
 sys.path.insert(0, os.path.expanduser('~/.claude/neuromorphic'))
 
+# 先查看 API 簽名（避免參數錯誤）
+from servers.tasks import SCHEMA as TASKS_SCHEMA
+from servers.memory import SCHEMA as MEMORY_SCHEMA
+print(TASKS_SCHEMA)
+
 from servers.tasks import get_task, update_task_status, log_agent_action
 from servers.memory import get_working_memory, set_working_memory, search_memory
 
@@ -48,7 +53,21 @@ update_task_status(TASK_ID, 'running')
 
 # 載入相關 working_memory
 context = get_working_memory(task['parent_id'])
+```
 
+### ⚠️ 常見參數錯誤提醒
+
+| 操作 | 正確寫法 | 錯誤寫法 |
+|------|----------|----------|
+| 取得任務 | `get_task(task_id=xxx)` | ✓ |
+| 更新狀態 | `update_task_status(task_id=xxx, ...)` | ✓ |
+| 工作記憶 | `get_working_memory(task_id=xxx)` | ✓ |
+| 建立子任務 | `create_subtask(parent_id=xxx, ...)` | ~~`task_id=xxx`~~ |
+
+> 不確定時執行：`print(TASKS_SCHEMA)` 或 `print(MEMORY_SCHEMA)`
+
+### 查詢相關記憶
+```python
 # ⭐ 查詢相關記憶 - 避免重複踩坑
 keywords = task['description'].split()[:3]  # 取前3個關鍵字
 patterns = search_memory(' '.join(keywords) + ' pattern', limit=3)

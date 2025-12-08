@@ -61,9 +61,25 @@ import sys
 import os
 sys.path.insert(0, os.path.expanduser('~/.claude/neuromorphic'))
 
+# 先查看 API 簽名（避免參數錯誤）
+from servers.tasks import SCHEMA as TASKS_SCHEMA
+from servers.memory import SCHEMA as MEMORY_SCHEMA
+print(TASKS_SCHEMA)
+
 from servers.tasks import create_task, create_subtask, get_task_progress
 from servers.memory import search_memory, store_memory, save_checkpoint
 ```
+
+### ⚠️ 常見參數錯誤提醒
+
+| 操作 | 正確寫法 | 錯誤寫法 |
+|------|----------|----------|
+| 建立子任務 | `create_subtask(parent_id=xxx, ...)` | ~~`task_id=xxx`~~ |
+| 取得下一任務 | `get_next_task(parent_id=xxx)` | ~~`task_id=xxx`~~ |
+| 取得進度 | `get_task_progress(parent_id=xxx)` | ~~`task_id=xxx`~~ |
+| 更新狀態 | `update_task_status(task_id=xxx, ...)` | ✓ |
+
+> 不確定時執行：`print(TASKS_SCHEMA)` 或 `print(MEMORY_SCHEMA)`
 
 ### 2. 查詢策略記憶 ⭐
 ```python
@@ -91,10 +107,11 @@ task_id = create_task(
 
 ### 4. 分解子任務
 ```python
-subtask_1 = create_subtask(task_id, "子任務 1", priority=8)
-subtask_2 = create_subtask(task_id, "子任務 2", depends_on=[subtask_1])
-subtask_3 = create_subtask(task_id, "子任務 3", depends_on=[subtask_1])
-subtask_4 = create_subtask(task_id, "子任務 4", depends_on=[subtask_2, subtask_3])
+# 注意：第一個參數是 parent_id，不是 task_id
+subtask_1 = create_subtask(parent_id=task_id, description="子任務 1", priority=8)
+subtask_2 = create_subtask(parent_id=task_id, description="子任務 2", depends_on=[subtask_1])
+subtask_3 = create_subtask(parent_id=task_id, description="子任務 3", depends_on=[subtask_1])
+subtask_4 = create_subtask(parent_id=task_id, description="子任務 4", depends_on=[subtask_2, subtask_3])
 ```
 
 ### 5. 派發任務
