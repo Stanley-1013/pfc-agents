@@ -9,20 +9,22 @@ Story 3: Graph Schema 與基礎 API
 - 影響分析（get_impact）
 - 從 L1 Index 同步節點（sync_from_index）
 
+⚠️ API 參數順序原則：主要操作對象（node_id/from_id）在前，project 在後
+
 使用方式：
     from servers.graph import add_node, add_edge, get_neighbors, get_impact
 
-    # 添加節點
+    # 添加節點 - add_node(node_id, project, kind, name, ref=None)
     add_node('flow.auth', 'my-project', 'flow', 'Authentication', 'flows/auth.md')
 
-    # 添加邊
-    add_edge('my-project', 'flow.auth', 'domain.user', 'uses')
+    # 添加邊 - add_edge(from_id, to_id, kind, project)
+    add_edge('flow.auth', 'domain.user', 'uses', 'my-project')
 
-    # 查詢鄰居
-    neighbors = get_neighbors('flow.auth', project='my-project', depth=1)
+    # 查詢鄰居 - get_neighbors(node_id, project, depth, direction)
+    neighbors = get_neighbors('flow.auth', 'my-project', depth=1)
 
-    # 查詢影響範圍
-    impacted = get_impact('domain.user', project='my-project')
+    # 查詢影響範圍 - get_impact(node_id, project)
+    impacted = get_impact('domain.user', 'my-project')
 """
 
 import sqlite3
@@ -36,80 +38,118 @@ BRAIN_DB = os.path.expanduser("~/.claude/neuromorphic/brain/brain.db")
 SCHEMA = """
 === Graph Server API ===
 
+⚠️ 參數順序原則：主要操作對象（node_id/from_id）在前，project 在後
+
+────────────────────────────────────────────────────────────────────
 add_node(node_id, project, kind, name, ref=None) -> bool
+────────────────────────────────────────────────────────────────────
     添加節點到圖中
 
     Parameters:
-        node_id: 節點 ID，如 'flow.auth', 'domain.user'
-        project: 專案名稱
-        kind: 節點類型 ('flow'|'domain'|'api'|'page'|'file'|'test')
-        name: 節點顯示名稱
-        ref: 參考位置，如 'flows/auth.md'
+        node_id: str  - 節點 ID，如 'flow.auth', 'domain.user'
+        project: str  - 專案名稱
+        kind: str     - 節點類型 ('flow'|'domain'|'api'|'page'|'file'|'test')
+        name: str     - 節點顯示名稱
+        ref: str      - 參考位置，如 'flows/auth.md'（可選）
+
+    Example:
+        add_node('flow.auth', 'my-project', 'flow', 'Auth Flow', 'flows/auth.md')
 
     Returns: True if created, False if already exists
 
-add_edge(project, from_id, to_id, kind) -> bool
+────────────────────────────────────────────────────────────────────
+add_edge(from_id, to_id, kind, project) -> bool
+────────────────────────────────────────────────────────────────────
     添加邊到圖中
 
     Parameters:
-        project: 專案名稱
-        from_id: 起始節點 ID
-        to_id: 目標節點 ID
-        kind: 邊類型 ('uses'|'implements'|'calls'|'covers')
+        from_id: str  - 起始節點 ID
+        to_id: str    - 目標節點 ID
+        kind: str     - 邊類型 ('uses'|'implements'|'calls'|'covers')
+        project: str  - 專案名稱
+
+    Example:
+        add_edge('flow.auth', 'api.login', 'implements', 'my-project')
 
     Returns: True if created, False if already exists
 
+────────────────────────────────────────────────────────────────────
 get_neighbors(node_id, project=None, depth=1, direction='both') -> List[Dict]
-    查詢節點的鄰居
+────────────────────────────────────────────────────────────────────
+    查詢節點的鄰居（BFS 遍歷）
 
     Parameters:
-        node_id: 節點 ID
-        project: 專案名稱（可選，NULL 查所有專案）
-        depth: 查詢深度（預設 1）
-        direction: 'outgoing'|'incoming'|'both'
+        node_id: str       - 節點 ID
+        project: str       - 專案名稱（可選，NULL 查所有專案）
+        depth: int         - 查詢深度（預設 1）
+        direction: str     - 'outgoing'|'incoming'|'both'
+
+    Example:
+        get_neighbors('flow.auth', 'my-project', depth=2, direction='outgoing')
 
     Returns: [{id, kind, name, ref, edge_kind, distance}]
 
+────────────────────────────────────────────────────────────────────
 get_impact(node_id, project=None) -> List[Dict]
+────────────────────────────────────────────────────────────────────
     查詢會被影響的節點（誰依賴我？）
 
     Parameters:
-        node_id: 節點 ID
-        project: 專案名稱（可選）
+        node_id: str  - 節點 ID
+        project: str  - 專案名稱（可選）
+
+    Example:
+        get_impact('api.login', 'my-project')
 
     Returns: [{id, kind, name, edge_kind}] - 所有指向此節點的節點
 
+────────────────────────────────────────────────────────────────────
 get_node(node_id, project) -> Optional[Dict]
+────────────────────────────────────────────────────────────────────
     獲取節點詳情
 
     Parameters:
-        node_id: 節點 ID
-        project: 專案名稱
+        node_id: str  - 節點 ID
+        project: str  - 專案名稱
+
+    Example:
+        get_node('flow.auth', 'my-project')
 
     Returns: {id, project, kind, name, ref} 或 None
 
+────────────────────────────────────────────────────────────────────
 list_nodes(project, kind=None) -> List[Dict]
+────────────────────────────────────────────────────────────────────
     列出專案的所有節點
 
     Parameters:
-        project: 專案名稱
-        kind: 節點類型過濾（可選）
+        project: str  - 專案名稱
+        kind: str     - 節點類型過濾（可選）
+
+    Example:
+        list_nodes('my-project', kind='flow')
 
     Returns: [{id, kind, name, ref}]
 
+────────────────────────────────────────────────────────────────────
 sync_from_index(project, index_data) -> Dict
+────────────────────────────────────────────────────────────────────
     從 L1 Index 同步節點到圖
 
     Parameters:
-        project: 專案名稱
-        index_data: parse_index() 返回的結構化數據
+        project: str       - 專案名稱
+        index_data: dict   - parse_index() 返回的結構化數據
 
     Returns: {nodes_added, edges_added}
 
+────────────────────────────────────────────────────────────────────
 delete_node(node_id, project) -> bool
+────────────────────────────────────────────────────────────────────
     刪除節點及相關邊
 
-delete_edge(project, from_id, to_id, kind) -> bool
+────────────────────────────────────────────────────────────────────
+delete_edge(from_id, to_id, kind, project) -> bool
+────────────────────────────────────────────────────────────────────
     刪除特定邊
 
 === Story 7: Task Trace 與熱點分析 ===
@@ -231,17 +271,22 @@ def add_node(node_id: str, project: str, kind: str, name: str,
         return False
 
 
-def add_edge(project: str, from_id: str, to_id: str, kind: str) -> bool:
+def add_edge(from_id: str, to_id: str, kind: str, project: str) -> bool:
     """添加邊到圖中
 
+    ⚠️ 參數順序：(from_id, to_id, kind, project) - 與 add_node 風格一致
+
     Args:
-        project: 專案名稱
-        from_id: 起始節點 ID
-        to_id: 目標節點 ID
+        from_id: 起始節點 ID（如 'flow.auth'）
+        to_id: 目標節點 ID（如 'api.login'）
         kind: 邊類型 ('uses'|'implements'|'calls'|'covers')
+        project: 專案名稱
 
     Returns:
         True if created, False if already exists
+
+    Example:
+        add_edge('flow.auth', 'api.login', 'implements', 'my-project')
     """
     _ensure_tables()
     db = get_db()
@@ -540,27 +585,28 @@ def sync_from_index(project: str, index_data: Dict[str, List[Dict]]) -> Dict[str
             # flow 關聯 -> implements 邊
             flow_id = item.get('flow')
             if flow_id:
-                if add_edge(project, flow_id, item_id, 'implements'):
+                # add_edge(from_id, to_id, kind, project)
+                if add_edge(flow_id, item_id, 'implements', project):
                     edges_added += 1
 
             # domain 關聯 -> uses 邊
             domain_id = item.get('domain')
             if domain_id:
-                if add_edge(project, item_id, domain_id, 'uses'):
+                if add_edge(item_id, domain_id, 'uses', project):
                     edges_added += 1
 
             # covers 關聯 -> covers 邊
             covers = item.get('covers', [])
             if isinstance(covers, list):
                 for covered_id in covers:
-                    if add_edge(project, item_id, covered_id, 'covers'):
+                    if add_edge(item_id, covered_id, 'covers', project):
                         edges_added += 1
 
             # depends 關聯 -> depends 邊
             depends = item.get('depends', [])
             if isinstance(depends, list):
                 for dep_id in depends:
-                    if add_edge(project, item_id, dep_id, 'depends'):
+                    if add_edge(item_id, dep_id, 'depends', project):
                         edges_added += 1
 
     return {

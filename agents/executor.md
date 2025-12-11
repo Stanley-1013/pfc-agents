@@ -121,14 +121,16 @@ if branch:
         for file_path in files_modified:
             file_node_id = f"file.{file_path.replace('/', '.')}"
             if branch.get('flow_id'):
-                add_edge(project, file_node_id, branch['flow_id'], 'implements')
+                # add_edge(from_id, to_id, kind, project)
+                add_edge(file_node_id, branch['flow_id'], 'implements', project)
 
     # 如果任務涉及 API，記錄 api -> domain 關係
     if 'api_endpoints' in locals():
         for api in api_endpoints:
             api_node_id = f"api.{api.replace('/', '.')}"
             for domain_id in branch.get('domain_ids', []):
-                add_edge(project, api_node_id, domain_id, 'belongs_to')
+                # add_edge(from_id, to_id, kind, project)
+                add_edge(api_node_id, domain_id, 'belongs_to', project)
 
 print(f"""
 ## 任務完成

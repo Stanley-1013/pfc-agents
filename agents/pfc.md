@@ -170,11 +170,12 @@ task_id = create_task(
 # 被動建圖：記錄這次任務涉及的關係
 if branch and branch.get('flow_id'):
     for domain_id in branch.get('domain_ids', []):
+        # add_edge(from_id, to_id, kind, project)
         add_edge(
-            project="PROJECT_NAME",
             from_id=branch['flow_id'],
             to_id=domain_id,
-            kind='uses'
+            kind='uses',
+            project="PROJECT_NAME"
         )
 ```
 
