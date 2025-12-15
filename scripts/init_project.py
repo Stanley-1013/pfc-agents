@@ -40,7 +40,10 @@ def init_project(project_name):
     db.commit()
     db.close()
 
-    # 3. 建立本地設定檔
+    # 3. 建立本地設定檔（放在 .claude/pfc/ 目錄下）
+    pfc_dir = os.path.join(os.getcwd(), '.claude', 'pfc')
+    os.makedirs(pfc_dir, exist_ok=True)
+
     config_content = f'''# Neuromorphic System Configuration
 # 專案: {project_name}
 
@@ -55,7 +58,7 @@ NEUROMORPHIC_PATH = "{base_dir}"
 # from servers.tasks import create_task, get_task_progress
 '''
 
-    config_path = '.neuromorphic.py'
+    config_path = os.path.join(pfc_dir, 'config.py')
     with open(config_path, 'w') as f:
         f.write(config_content)
 
@@ -69,11 +72,9 @@ NEUROMORPHIC_PATH = "{base_dir}"
     print("\n使用方式:")
     print("  對 Claude Code 說：")
     print(f'  「這是 {project_name} 專案，使用 pfc agent 規劃重構任務」')
-    print("\n在程式碼中使用:")
-    print("  from .neuromorphic import PROJECT_NAME, NEUROMORPHIC_PATH")
-    print("  import sys")
-    print("  sys.path.insert(0, NEUROMORPHIC_PATH)")
-    print("  from servers.memory import search_memory")
+    print("\n專案設定位置:")
+    print(f"  .claude/pfc/config.py")
+    print(f"  .claude/pfc/INDEX.md  (SSOT 索引)")
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

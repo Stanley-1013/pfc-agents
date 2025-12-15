@@ -78,61 +78,46 @@ git pull
 python ~/.claude/neuromorphic/scripts/init_project.py <project_name>
 ```
 
-這會在專案中建立 `.neuromorphic.py` 設定檔，並在資料庫中註冊專案。
+這會在專案中建立 `.claude/pfc/config.py` 設定檔，並在資料庫中註冊專案。
 
 ### Step 2：建立 SSOT INDEX（導航圖）
 
-在專案中建立 `.ssot/INDEX.md`，作為專案文檔的**導航圖**：
+在專案中建立 `.claude/pfc/INDEX.md`，作為專案文檔的**導航圖**：
 
 ```bash
-mkdir -p .ssot
-touch .ssot/INDEX.md
+mkdir -p .claude/pfc
+touch .claude/pfc/INDEX.md
 ```
+
+或者執行安裝腳本時選擇「初始化 SSOT」，會自動建立模板。
 
 **重要**：INDEX 使用 `ref` 字段**指向現有文檔**，不複製內容。
 
 ```yaml
-# .ssot/INDEX.md
+# .claude/pfc/INDEX.md
 
-## Flows
-
-flows:
-  - id: flow.auth
-    name: 認證流程
-    ref: docs/flows/auth.md      # 指向現有文檔
-
-  - id: flow.payment
-    name: 付款流程
-    ref: docs/flows/payment.md
-
-## Docs
+## 技術文件
 
 docs:
   - id: doc.prd
     name: 產品需求文檔
     ref: docs/PRD.md             # 指向現有 PRD
 
-  - id: doc.sa
+  - id: doc.architecture
     name: 系統架構
-    ref: docs/SA.md
+    ref: docs/ARCHITECTURE.md
 
-  - id: doc.tdd
-    name: 技術設計
-    ref: docs/TDD.md
+## 主要程式碼
 
-## Domains
-
-domains:
-  - id: domain.user
-    name: 用戶模組
-    ref: src/modules/user/
-
-  - id: domain.order
-    name: 訂單模組
-    ref: src/modules/order/
+code:
+  - id: code.main
+    name: 主程式入口
+    ref: src/main.py
 ```
 
-> **導航圖設計理念**：INDEX 是一張地圖，告訴系統「PRD 在哪、Flow 在哪」，不是把所有文檔都複製進來。這樣維護成本低，且利用現有文檔結構。
+> **導航圖設計理念**：INDEX 是一張地圖，告訴系統文檔在哪，不是把所有文檔都複製進來。這樣維護成本低，且利用現有文檔結構。
+>
+> **提示**：可以對 Claude 說「請掃描專案，找出技術文件並更新 .claude/pfc/INDEX.md」讓 LLM 自動填入。
 
 ### Step 3：建立 Code Graph（建議）
 
