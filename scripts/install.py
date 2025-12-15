@@ -89,10 +89,11 @@ def install():
                 shutil.copy2(src, dst)
                 print(f"✅ 安裝 agent: {agent_file}")
 
-    # 3. 初始化資料庫（只在不存在時）
+    # 3. 初始化或升級資料庫
     if os.path.exists(db_path):
         print(f"✅ 資料庫已存在: {db_path}")
-        print("   （跨專案記憶會保留，不會重新初始化）")
+        # 自動補齊缺失的 table（不影響現有資料）
+        upgrade_database(db_path, schema_path)
     else:
         init_database(db_path, schema_path)
 
@@ -383,6 +384,47 @@ def ask_sync_code_graph(auto_confirm=False):
     except Exception as e:
         print(f"❌ 同步失敗: {e}")
         print("   請確認專案結構正確，之後可執行 `neuromorphic sync` 重試")
+
+
+def upgrade_database(db_path, schema_path):
+    """升級資料庫：補齊缺失的 table（不影響現有資料）
+
+    使用 CREATE TABLE IF NOT EXISTS，所以只會建立缺失的 table，
+    不會影響現有資料。
+    """
+    if not os.path.exists(schema_path):
+        print(f"⚠️  找不到 schema: {schema_path}")
+        return
+
+    db = sqlite3.connect(db_path)
+    cursor = db.cursor()
+
+    # 取得現有 table 清單
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    existing_tables = {row[0] for row in cursor.fetchall()}
+
+    # 執行 schema（CREATE TABLE IF NOT EXISTS 不會重建現有 table）
+    with open(schema_path) as f:
+        try:
+            cursor.executescript(f.read())
+        except sqlite3.OperationalError as e:
+            # 忽略 trigger 已存在的錯誤
+            if "already exists" not in str(e):
+                raise
+
+    # 取得新的 table 清單
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    new_tables = {row[0] for row in cursor.fetchall()}
+
+    # 計算新增的 table
+    added_tables = new_tables - existing_tables
+    if added_tables:
+        print(f"   📦 已補齊 {len(added_tables)} 個 table: {', '.join(sorted(added_tables))}")
+    else:
+        print("   （Schema 已是最新版）")
+
+    db.commit()
+    db.close()
 
 
 def init_database(db_path, schema_path):
