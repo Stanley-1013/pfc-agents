@@ -113,14 +113,8 @@ def install():
     print("\n使用方式:")
     print("  對 Claude Code 說：「使用 pfc agent 規劃 [任務描述]」")
 
-    # 6. 詢問是否加入專案 CLAUDE.md
-    ask_add_to_claude_md(base_dir)
-
-    # 7. 詢問是否初始化專案級 SSOT
-    ask_init_project_ssot(base_dir)
-
-    # 8. 詢問是否同步 Code Graph
-    ask_sync_code_graph()
+    # 回傳 base_dir 供後續處理
+    return base_dir
 
 def setup_hooks(settings_path, base_dir):
     """設定 Claude Code PostToolUse Hook"""
@@ -179,19 +173,26 @@ def setup_hooks(settings_path, base_dir):
     print(f"   Hook: PostToolUse → Task → post_task.py")
 
 
-def ask_add_to_claude_md(base_dir):
-    """詢問是否將 PFC 系統設定加入專案的 CLAUDE.md"""
+def ask_add_to_claude_md(base_dir, auto_confirm=False):
+    """詢問是否將 PFC 系統設定加入專案的 CLAUDE.md
+
+    Args:
+        base_dir: neuromorphic 系統目錄
+        auto_confirm: True 時自動確認，不詢問（供非互動模式使用）
+    """
     print("\n" + "=" * 50)
 
     # 找當前目錄的 CLAUDE.md
     cwd = os.getcwd()
     claude_md_path = os.path.join(cwd, 'CLAUDE.md')
 
-    response = input("是否要將 PFC 系統設定加到當前專案的 CLAUDE.md？(y/n): ").strip().lower()
-
-    if response != 'y':
-        print(f"跳過。如需手動加入，請參考：{os.path.join(base_dir, 'README.md')}")
-        return
+    if not auto_confirm:
+        response = input("是否要將 PFC 系統設定加到當前專案的 CLAUDE.md？(y/n): ").strip().lower()
+        if response != 'y':
+            print(f"跳過。如需手動加入，請參考：{os.path.join(base_dir, 'README.md')}")
+            return
+    else:
+        print("自動加入 CLAUDE.md 設定...")
 
     # 要加入的設定內容
     pfc_config = '''
@@ -273,8 +274,13 @@ from servers.memory import search_memory, load_checkpoint
         print(f"❌ 無法寫入 CLAUDE.md: {e}")
         print(f"   請手動加入，參考：{os.path.join(base_dir, 'README.md')}")
 
-def ask_init_project_ssot(base_dir):
-    """詢問是否為當前專案初始化 SSOT INDEX"""
+def ask_init_project_ssot(base_dir, auto_confirm=False):
+    """詢問是否為當前專案初始化 SSOT INDEX
+
+    Args:
+        base_dir: neuromorphic 系統目錄
+        auto_confirm: True 時自動確認，不詢問（供非互動模式使用）
+    """
     print("\n" + "=" * 50)
 
     cwd = os.getcwd()
@@ -286,11 +292,13 @@ def ask_init_project_ssot(base_dir):
         print(f"✅ 專案 SSOT 已存在: {index_path}")
         return
 
-    response = input("是否要為當前專案初始化 SSOT INDEX？(y/n): ").strip().lower()
-
-    if response != 'y':
-        print("跳過。之後可執行 `python install.py --init-ssot` 初始化")
-        return
+    if not auto_confirm:
+        response = input("是否要為當前專案初始化 SSOT INDEX？(y/n): ").strip().lower()
+        if response != 'y':
+            print("跳過。之後可執行 `python install.py --init-ssot` 初始化")
+            return
+    else:
+        print("自動初始化 SSOT INDEX...")
 
     # 建立目錄
     os.makedirs(pfc_dir, exist_ok=True)
@@ -340,17 +348,23 @@ code:
         print(f"❌ 無法建立 INDEX.md: {e}")
 
 
-def ask_sync_code_graph():
-    """詢問是否同步當前專案的 Code Graph"""
+def ask_sync_code_graph(auto_confirm=False):
+    """詢問是否同步當前專案的 Code Graph
+
+    Args:
+        auto_confirm: True 時自動確認，不詢問（供非互動模式使用）
+    """
     print("\n" + "=" * 50)
 
     cwd = os.getcwd()
 
-    response = input("是否要同步當前專案的 Code Graph？(y/n): ").strip().lower()
-
-    if response != 'y':
-        print("跳過。之後可執行 `neuromorphic sync` 同步")
-        return
+    if not auto_confirm:
+        response = input("是否要同步當前專案的 Code Graph？(y/n): ").strip().lower()
+        if response != 'y':
+            print("跳過。之後可執行 `neuromorphic sync` 同步")
+            return
+    else:
+        print("自動同步 Code Graph...")
 
     print("📊 同步 Code Graph...")
     try:
@@ -417,8 +431,41 @@ def reset_database():
         print("取消重置")
 
 if __name__ == '__main__':
-    import sys
-    if len(sys.argv) > 1 and sys.argv[1] == '--reset':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Neuromorphic System 安裝腳本')
+    parser.add_argument('--reset', action='store_true', help='重置資料庫（需手動確認，無法非互動）')
+    parser.add_argument('--add-claude-md', action='store_true', help='自動加入 CLAUDE.md 設定')
+    parser.add_argument('--init-ssot', action='store_true', help='自動初始化專案 SSOT INDEX')
+    parser.add_argument('--sync-graph', action='store_true', help='自動同步 Code Graph')
+    parser.add_argument('--all', action='store_true', help='執行所有可選設定（不含 reset）')
+    parser.add_argument('--skip-prompts', action='store_true', help='跳過所有互動詢問（僅執行核心安裝）')
+
+    args = parser.parse_args()
+
+    if args.reset:
+        # reset 永遠需要手動確認，保護資料安全
         reset_database()
     else:
-        install()
+        base_dir = install()
+
+        # 判斷執行模式
+        if args.skip_prompts:
+            # 跳過所有後續詢問
+            print("\n（使用 --skip-prompts，跳過可選設定）")
+        elif args.all or args.add_claude_md or args.init_ssot or args.sync_graph:
+            # 有指定參數，按參數執行（非互動）
+            if args.all:
+                args.add_claude_md = args.init_ssot = args.sync_graph = True
+
+            if args.add_claude_md:
+                ask_add_to_claude_md(base_dir, auto_confirm=True)
+            if args.init_ssot:
+                ask_init_project_ssot(base_dir, auto_confirm=True)
+            if args.sync_graph:
+                ask_sync_code_graph(auto_confirm=True)
+        else:
+            # 無參數時維持原本的互動詢問
+            ask_add_to_claude_md(base_dir)
+            ask_init_project_ssot(base_dir)
+            ask_sync_code_graph()
