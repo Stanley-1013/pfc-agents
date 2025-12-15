@@ -295,79 +295,43 @@ def ask_init_project_ssot(base_dir):
     # 建立目錄
     os.makedirs(pfc_dir, exist_ok=True)
 
-    # INDEX 模板
+    # INDEX 模板 - 簡化版，指向專案現有文檔
     project_name = os.path.basename(cwd)
-    index_template = f'''# Project Index (L1) - {project_name}
+    index_template = f'''# {project_name} - SSOT Index
 
-> **導航圖**：INDEX 是專案的導航地圖，使用 `ref` 指向現有文檔，不複製內容。
->
-> - `ref` 使用相對路徑指向專案內的文檔或程式碼
-> - 系統會透過 `ref` 自動載入對應內容
+> 用 `ref` 指向專案內的技術文件，Agent 會自動載入對應內容。
 
----
-
-## Flows
-
-> 業務流程定義
+## 技術文件
 
 ```yaml
-flows:
-  # 範例：
-  # - id: flow.auth
-  #   name: Authentication
-  #   description: 使用者認證流程
-  #   ref: docs/flows/auth.md
+docs:
+  # 指向專案內的技術文件（相對路徑）
+  # - id: doc.prd
+  #   name: 產品需求文件
+  #   ref: docs/PRD.md
+  #
+  # - id: doc.architecture
+  #   name: 架構設計
+  #   ref: docs/ARCHITECTURE.md
+  #
+  # - id: doc.api
+  #   name: API 文件
+  #   ref: docs/API.md
 ```
 
----
-
-## Domains
-
-> 業務領域/模組
+## 主要程式碼
 
 ```yaml
-domains:
-  # 範例：
-  # - id: domain.user
-  #   name: User
-  #   description: 使用者管理
-  #   ref: src/models/user.py
+code:
+  # 指向主要程式碼入口（相對路徑）
+  # - id: code.main
+  #   name: 主程式
+  #   ref: src/main.py
+  #
+  # - id: code.models
+  #   name: 資料模型
+  #   ref: src/models/
 ```
-
----
-
-## APIs
-
-> 主要 API 入口
-
-```yaml
-apis:
-  # 範例：
-  # - id: api.auth.login
-  #   name: POST /api/auth/login
-  #   description: 使用者登入
-  #   flow: flow.auth
-  #   ref: src/routes/auth.py
-```
-
----
-
-## 維護說明
-
-### 添加新項目
-
-1. 使用 `[type].[name]` 格式作為 id
-2. 確保 id 全局唯一
-3. 用 `ref` 指向實際檔案（相對路徑）
-
-### Node ID 命名規則
-
-| 前綴 | 用途 | 範例 |
-|------|------|------|
-| `flow.xxx` | 業務流程 | `flow.auth` |
-| `domain.xxx` | 業務領域 | `domain.user` |
-| `api.xxx.yyy` | API 端點 | `api.auth.login` |
-| `doc.xxx` | 文檔 | `doc.prd` |
 '''
 
     try:
