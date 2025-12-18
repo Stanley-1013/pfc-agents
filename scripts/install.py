@@ -321,6 +321,21 @@ docs:
   - id: doc.xxx        # 唯一識別碼
     name: 文件名稱      # 顯示名稱
     ref: path/to/file  # 相對路徑
+    required: true     # 可選：標記為必讀規範
+```
+
+## 必讀規範（每次任務開始前載入）
+
+```yaml
+rules:
+  # 指向專案必須遵守的規範文檔
+  # Agent 開始任務前會先讀取這些文檔
+  # - id: rule.coding-standards
+  #   ref: docs/coding-standards.md
+  #   required: true
+  # - id: rule.api-guidelines
+  #   ref: docs/api-guidelines.md
+  #   required: true
 ```
 
 ## 技術文件

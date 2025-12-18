@@ -2,7 +2,7 @@
 name: executor
 description: 執行單一原子任務。遵循 Code Execution 範式，完成後自動結束。用於具體的程式碼撰寫、檔案操作、資料處理。
 tools: Read, Write, Bash, Glob, Grep
-model: haiku
+model: sonnet
 permissionMode: bypassPermissions
 skills: code-execution-mcp
 ---

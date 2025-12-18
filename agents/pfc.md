@@ -2,7 +2,7 @@
 name: pfc
 description: 複雜任務的總指揮。負責任務規劃、分解、協調多個 executor、管理記憶體。用於需要多步驟規劃或長時間執行的任務。
 tools: Read, Write, Bash, Glob, Grep
-model: sonnet
+model: opus
 ---
 
 # PFC Agent - Prefrontal Cortex (任務協調者)
@@ -72,6 +72,34 @@ from servers.tasks import create_task, create_subtask, get_task_progress, load_b
 from servers.memory import search_memory, store_memory, save_checkpoint
 from servers.ssot import load_doctrine, load_index, parse_index
 from servers.graph import add_edge, get_neighbors, sync_from_index, record_node_access, get_hot_nodes, get_cold_nodes
+```
+
+### 1.5 載入必讀規範 ⭐（Memory Tree）
+
+> **重要**：開始任務前，先載入 INDEX 中標記為 `required: true` 的規範文檔。
+
+```python
+# 讀取 INDEX，找出必讀規範
+index_content = load_index(project_dir)
+parsed = parse_index(index_content)
+
+# 載入 rules section 中 required: true 的文檔
+required_rules = []
+for section in ['rules', 'docs']:
+    for item in parsed.get(section, []):
+        if item.get('required'):
+            required_rules.append(item)
+
+if required_rules:
+    print("## 必讀規範")
+    for rule in required_rules:
+        ref_path = rule.get('ref')
+        if ref_path:
+            # 讀取規範內容（LLM 自然會遵循）
+            print(f"### {rule.get('name', ref_path)}")
+            # 使用 Read tool 讀取 ref_path
+    print("---")
+    print("請在規劃任務時遵循上述規範。")
 ```
 
 ### ⚠️ 常見參數錯誤提醒

@@ -287,13 +287,14 @@ tests:
 2. **確保 id 全局唯一**
 3. **用 `ref` 指向實際檔案**
 
-```yaml
-# 範例：新增一個 Flow
+範例：新增一個 Flow
+
+```
 flows:
-  - id: flow.checkout
-    name: 結帳流程
-    description: 購物車結帳流程
-    ref: docs/flows/checkout.md  # 指向現有文檔
+  - id: flow.your-flow-name
+    name: 流程名稱
+    description: 流程描述
+    ref: path/to/implementation.py  # 指向現有文檔或程式碼
 ```
 
 ### Node ID 命名規則
