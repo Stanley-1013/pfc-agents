@@ -63,7 +63,7 @@ def check_dependencies():
     return True
 
 def install():
-    base_dir = os.path.expanduser('~/.claude/neuromorphic')
+    base_dir = os.path.expanduser('~/.claude/skills/neuromorphic')
     agents_dir = os.path.expanduser('~/.claude/agents')
     brain_dir = os.path.join(base_dir, 'brain')
     db_path = os.path.join(brain_dir, 'brain.db')
@@ -201,7 +201,7 @@ def ask_add_to_claude_md(base_dir, auto_confirm=False):
 
 > **本專案使用 Neuromorphic Multi-Agent 系統進行任務管理**
 >
-> 完整協作指南：`~/.claude/neuromorphic/SYSTEM_GUIDE.md`
+> 完整協作指南：`~/.claude/skills/neuromorphic/SYSTEM_GUIDE.md`
 
 ### ⚠️ 使用規則
 
@@ -242,7 +242,7 @@ def ask_add_to_claude_md(base_dir, auto_confirm=False):
 ```python
 import sys
 import os
-sys.path.insert(0, os.path.expanduser('~/.claude/neuromorphic'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/neuromorphic'))
 from servers.tasks import get_task_progress, create_task
 from servers.memory import search_memory, load_checkpoint
 ```
@@ -385,7 +385,7 @@ def ask_sync_code_graph(auto_confirm=False):
     print("📊 同步 Code Graph...")
     try:
         # 動態載入 facade 模組
-        base_dir = os.path.expanduser('~/.claude/neuromorphic')
+        base_dir = os.path.expanduser('~/.claude/skills/neuromorphic')
         sys.path.insert(0, base_dir)
         from servers.facade import sync
 
@@ -472,7 +472,7 @@ def init_database(db_path, schema_path):
 
 def reset_database():
     """強制重置資料庫（謹慎使用）"""
-    base_dir = os.path.expanduser('~/.claude/neuromorphic')
+    base_dir = os.path.expanduser('~/.claude/skills/neuromorphic')
     brain_dir = os.path.join(base_dir, 'brain')
     db_path = os.path.join(brain_dir, 'brain.db')
     schema_path = os.path.join(brain_dir, 'schema.sql')

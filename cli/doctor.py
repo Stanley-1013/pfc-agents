@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 # 確保可以 import servers
-sys.path.insert(0, os.path.expanduser('~/.claude/neuromorphic'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/neuromorphic'))
 
 
 class Status(Enum):
@@ -35,7 +35,7 @@ class DiagnosticResult:
 
 def check_database() -> DiagnosticResult:
     """檢查資料庫是否存在且可連接"""
-    db_path = os.path.expanduser('~/.claude/neuromorphic/brain/brain.db')
+    db_path = os.path.expanduser('~/.claude/skills/neuromorphic/brain/brain.db')
 
     if not os.path.exists(db_path):
         return DiagnosticResult(
@@ -116,7 +116,7 @@ def check_registry() -> DiagnosticResult:
 
 def check_ssot_files() -> DiagnosticResult:
     """檢查 SSOT 檔案"""
-    ssot_dir = os.path.expanduser('~/.claude/neuromorphic/brain/ssot')
+    ssot_dir = os.path.expanduser('~/.claude/skills/neuromorphic/brain/ssot')
     doctrine_path = os.path.join(ssot_dir, 'PROJECT_DOCTRINE.md')
     index_path = os.path.join(ssot_dir, 'PROJECT_INDEX.md')
 

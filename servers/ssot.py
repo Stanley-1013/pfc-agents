@@ -36,7 +36,7 @@ from pathlib import Path
 # 常量定義
 # =============================================================================
 
-SSOT_DIR = os.path.expanduser("~/.claude/neuromorphic/brain/ssot")
+SSOT_DIR = os.path.expanduser("~/.claude/skills/neuromorphic/brain/ssot")
 
 SCHEMA = """
 === SSOT Server API ===

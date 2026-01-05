@@ -5,7 +5,7 @@
 #
 # 使用方式：
 #   cd /path/to/your/project
-#   ~/.claude/neuromorphic/scripts/install-hooks.sh
+#   ~/.claude/skills/neuromorphic/scripts/install-hooks.sh
 
 set -e
 

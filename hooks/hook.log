@@ -33,3 +33,11 @@
 [2025-12-15T13:56:29.867590] [critic] task_id=critic-test-002, agent_id=fd28e6a3
 [2025-12-15T13:56:29.958772] Critic verdict: APPROVED for task 43e38cc8
 [2025-12-15T13:56:29.990366] finish_validation result: {'status': 'approved', 'original_task_phase': 'documentation', 'next_action': 'proceed', 'message': 'Task 43e38cc8 validation passed'}
+[2025-12-18T18:14:16.451578] No TASK_ID found in prompt for Explore
+[2025-12-24T15:21:24.938101] No TASK_ID found in prompt for Explore
+[2025-12-24T23:34:47.120046] No TASK_ID found in prompt for Explore
+[2025-12-24T23:35:23.141888] No TASK_ID found in prompt for Explore
+[2025-12-24T23:36:17.852600] No TASK_ID found in prompt for Explore
+[2026-01-05T10:19:35.418430] No TASK_ID found in prompt for claude-code-guide
+[2026-01-05T10:20:54.674554] No TASK_ID found in prompt for Explore
+[2026-01-05T10:24:52.908753] No TASK_ID found in prompt for Plan

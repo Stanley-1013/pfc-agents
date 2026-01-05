@@ -1,0 +1,35 @@
+{
+  "database": {
+    "path": "~/.claude/skills/neuromorphic/brain/brain.db"
+  },
+  "ssot": {
+    "path": "~/.claude/skills/neuromorphic/brain/ssot"
+  },
+  "code_graph": {
+    "supported_extensions": [".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs"],
+    "ignore_patterns": ["node_modules", ".git", "__pycache__", ".venv", "dist", "build"]
+  },
+  "memory": {
+    "default_importance": 5,
+    "semantic_search": {
+      "default_limit": 10,
+      "rerank_mode": "fts5_only"
+    }
+  },
+  "tasks": {
+    "default_priority": 5,
+    "max_retries": 3
+  },
+  "agents": {
+    "pfc": {
+      "model": "opus",
+      "micro_nap_threshold": 5
+    },
+    "executor": {
+      "model": "sonnet"
+    },
+    "critic": {
+      "model": "sonnet"
+    }
+  }
+}

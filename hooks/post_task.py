@@ -15,9 +15,9 @@ import re
 from datetime import datetime
 
 # 加入 neuromorphic 路徑
-sys.path.insert(0, os.path.expanduser('~/.claude/neuromorphic'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/neuromorphic'))
 
-LOG_PATH = os.path.expanduser("~/.claude/neuromorphic/hooks/hook.log")
+LOG_PATH = os.path.expanduser("~/.claude/skills/neuromorphic/hooks/hook.log")
 
 
 def log(msg: str):

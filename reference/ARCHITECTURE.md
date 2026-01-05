@@ -222,7 +222,7 @@ register_node_kind('component', '元件', 'React/Vue 元件')
 ## 目錄結構
 
 ```
-~/.claude/neuromorphic/
+~/.claude/skills/neuromorphic/
 ├── ARCHITECTURE.md          # 本文檔
 ├── agents/                  # Agent 定義
 │   ├── pfc.md              # 規劃者（三層查詢）
@@ -339,7 +339,7 @@ brain/brain.db            # 包含：
 
 ```
 你的機器
-├── ~/.claude/neuromorphic/brain/brain.db     # 你的記憶
+├── ~/.claude/skills/neuromorphic/brain/brain.db     # 你的記憶
 └── ~/your-project/brain/ssot/                # 本地 SSOT
 ```
 
@@ -353,7 +353,7 @@ Git Repository (共享)
 └── brain/ssot/           # SSOT 由 Git 管理
 
 每個人的機器
-└── ~/.claude/neuromorphic/brain/brain.db     # 各自的記憶
+└── ~/.claude/skills/neuromorphic/brain/brain.db     # 各自的記憶
 ```
 
 **關鍵實踐：**

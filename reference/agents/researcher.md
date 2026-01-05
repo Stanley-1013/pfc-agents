@@ -29,7 +29,7 @@ model: sonnet
 ```python
 import sys
 import os
-sys.path.insert(0, os.path.expanduser('~/.claude/neuromorphic'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/neuromorphic'))
 
 # 先查看 API 簽名（避免參數錯誤）
 from servers.memory import SCHEMA as MEMORY_SCHEMA

@@ -14,7 +14,7 @@ venv/
 .coverage
 htmlcov/
 
-# Database (keep example only)
+# Database (keep schema only)
 brain/brain.db
 
 # IDE
@@ -26,4 +26,10 @@ brain/brain.db
 # OS
 .DS_Store
 Thumbs.db
+
+# Backups
 brain/*.backup.*
+*.bak
+
+# Hook logs
+hooks/hook.log

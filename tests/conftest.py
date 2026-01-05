@@ -18,7 +18,7 @@ import shutil
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Schema 路徑
-SCHEMA_PATH = os.path.expanduser('~/.claude/neuromorphic/brain/schema.sql')
+SCHEMA_PATH = os.path.expanduser('~/.claude/skills/neuromorphic/brain/schema.sql')
 
 
 # =============================================================================

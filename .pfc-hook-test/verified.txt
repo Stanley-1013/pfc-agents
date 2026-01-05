@@ -1,2 +1,0 @@
-PostToolUse Hook 驗證成功
-Task ID: 43e38cc8

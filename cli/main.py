@@ -20,7 +20,7 @@ import os
 import argparse
 
 # 確保可以 import servers
-sys.path.insert(0, os.path.expanduser('~/.claude/neuromorphic'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/neuromorphic'))
 
 
 def cmd_doctor(args):
@@ -137,7 +137,7 @@ def cmd_install_hooks(args):
     """安裝 Git hooks"""
     import subprocess
 
-    script_path = os.path.expanduser('~/.claude/neuromorphic/scripts/install-hooks.sh')
+    script_path = os.path.expanduser('~/.claude/skills/neuromorphic/scripts/install-hooks.sh')
 
     if not os.path.exists(script_path):
         print(f"Error: Install script not found: {script_path}")

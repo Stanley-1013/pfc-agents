@@ -9,7 +9,7 @@ import sys
 import sqlite3
 
 def init_project(project_name):
-    base_dir = os.path.expanduser('~/.claude/neuromorphic')
+    base_dir = os.path.expanduser('~/.claude/skills/neuromorphic')
     db_path = os.path.join(base_dir, 'brain', 'brain.db')
 
     print(f"🚀 初始化專案: {project_name}")
