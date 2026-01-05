@@ -61,7 +61,7 @@ def auto_init_database():
         import sqlite3
         print("🔧 Auto-initializing database...")
         conn = sqlite3.connect(db_path)
-        with open(schema_path) as f:
+        with open(schema_path, encoding='utf-8') as f:
             conn.executescript(f.read())
         conn.commit()
         conn.close()
