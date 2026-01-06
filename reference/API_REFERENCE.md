@@ -1,10 +1,10 @@
-# Cortex API Reference
+# HAN API Reference
 
 ## Import
 
 ```python
 import sys, os
-sys.path.insert(0, os.path.expanduser('~/.claude/skills/cortex-agents'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/han-agents'))
 
 # Facade (recommended)
 from servers.facade import (

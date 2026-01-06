@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Cortex Memory Operations
+HAN Memory Operations
 
 記憶操作工具腳本。
 
@@ -21,7 +21,7 @@ import argparse
 import json
 
 # 確保可以 import servers
-sys.path.insert(0, os.path.expanduser('~/.claude/skills/cortex-agents'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/han-agents'))
 
 
 def cmd_search(args):
@@ -78,7 +78,7 @@ def cmd_list(args):
     """列出記憶"""
     import sqlite3
 
-    db_path = os.path.expanduser('~/.claude/skills/cortex-agents/brain/brain.db')
+    db_path = os.path.expanduser('~/.claude/skills/han-agents/brain/brain.db')
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
 
@@ -155,7 +155,7 @@ def cmd_load_checkpoint(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Cortex Memory Operations'
+        description='HAN Memory Operations'
     )
 
     subparsers = parser.add_subparsers(dest='command', help='Command')

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Cortex System - 專案初始化腳本
+HAN System - 專案初始化腳本
 建立專案 Skill 結構和資料庫記錄
 """
 
@@ -102,17 +102,17 @@ def init_project(project_name, project_dir=None):
     config_dir = os.path.join(project_dir, '.claude')
     os.makedirs(config_dir, exist_ok=True)
 
-    config_content = f'''# Cortex System Configuration
+    config_content = f'''# HAN System Configuration
 # 專案: {project_name}
 
 PROJECT_NAME = "{project_name}"
 BRAIN_DB = "{db_path}"
-NEUROMORPHIC_PATH = "{base_dir}"
+HAN_PATH = "{base_dir}"
 SKILL_DIR = "{skill_dir}"
 
 # 使用方式:
 # import sys
-# sys.path.insert(0, NEUROMORPHIC_PATH)
+# sys.path.insert(0, HAN_PATH)
 # from servers.memory import search_memory, store_memory
 # from servers.tasks import create_task, get_task_progress
 '''

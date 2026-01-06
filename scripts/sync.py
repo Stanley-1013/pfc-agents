@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Cortex Sync Script
+HAN Sync Script
 
 同步 Code Graph 和 SSOT Graph。
 

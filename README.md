@@ -1,4 +1,10 @@
-# Cortex Multi-Agent System
+# HAN-Agents
+
+**HAN** = **H**ierarchical **A**pproached **N**euromorphic Agents
+
+- **Hierarchical**: PFC coordinates specialized agents (Executor, Critic, Memory, Researcher)
+- **Approached**: Task-driven methodology with planning → execution → validation workflow
+- **Neuromorphic**: Brain-inspired architecture (Prefrontal Cortex, Motor Cortex, Hippocampus)
 
 A multi-agent task system with three-layer architecture: **Skill** (intent) + **Code Graph** (reality) + **Memory** (experience).
 
@@ -10,17 +16,17 @@ Works with any AI coding agent that supports custom skills/tools, including Clau
 
 **macOS/Linux:**
 ```bash
-git clone https://github.com/Stanley-1013/cortex-agents.git ~/.claude/skills/cortex-agents
+git clone https://github.com/Stanley-1013/han-agents.git ~/.claude/skills/han-agents
 ```
 
 **Windows (PowerShell):**
 ```powershell
-git clone https://github.com/Stanley-1013/cortex-agents.git "$env:USERPROFILE\.claude\skills\cortex-agents"
+git clone https://github.com/Stanley-1013/han-agents.git "$env:USERPROFILE\.claude\skills\han-agents"
 ```
 
 **Windows (CMD):**
 ```cmd
-git clone https://github.com/Stanley-1013/cortex-agents.git "%USERPROFILE%\.claude\skills\cortex-agents"
+git clone https://github.com/Stanley-1013/han-agents.git "%USERPROFILE%\.claude\skills\han-agents"
 ```
 
 ### Step 2: Run Install Script
@@ -32,12 +38,12 @@ The install script will:
 
 **macOS/Linux:**
 ```bash
-python ~/.claude/skills/cortex-agents/scripts/install.py --skip-prompts
+python ~/.claude/skills/han-agents/scripts/install.py --skip-prompts
 ```
 
 **Windows:**
 ```cmd
-python "%USERPROFILE%\.claude\skills\cortex-agents\scripts\install.py" --skip-prompts
+python "%USERPROFILE%\.claude\skills\han-agents\scripts\install.py" --skip-prompts
 ```
 
 Install options:
@@ -53,7 +59,7 @@ Add to `~/.claude/settings.json`:
 
 ```json
 {
-  "skills": ["~/.claude/skills/cortex-agents"]
+  "skills": ["~/.claude/skills/han-agents"]
 }
 ```
 
@@ -65,13 +71,13 @@ Add the skill path to your agent's configuration, or include the import in your 
 
 ```python
 import sys, os
-sys.path.insert(0, '/path/to/skills/cortex-agents')
+sys.path.insert(0, '/path/to/skills/han-agents')
 ```
 
 ### Verify Installation
 
 ```bash
-python ~/.claude/skills/cortex-agents/scripts/doctor.py
+python ~/.claude/skills/han-agents/scripts/doctor.py
 ```
 
 ## Features
@@ -86,7 +92,7 @@ python ~/.claude/skills/cortex-agents/scripts/doctor.py
 
 ```python
 import sys, os
-sys.path.insert(0, os.path.expanduser('~/.claude/skills/cortex-agents'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/han-agents'))
 
 from servers.facade import sync, status, check_drift
 from servers.tasks import create_task, create_subtask
@@ -99,12 +105,12 @@ Initialize a project Skill:
 
 **macOS/Linux:**
 ```bash
-python ~/.claude/skills/cortex-agents/scripts/init_project.py my-project /path/to/project
+python ~/.claude/skills/han-agents/scripts/init_project.py my-project /path/to/project
 ```
 
 **Windows (CMD/PowerShell):**
 ```cmd
-python "%USERPROFILE%\.claude\skills\cortex-agents\scripts\init_project.py" my-project C:\path\to\project
+python "%USERPROFILE%\.claude\skills\han-agents\scripts\init_project.py" my-project C:\path\to\project
 ```
 
 This creates `<project>/.claude/skills/<project-name>/SKILL.md` - a template for LLM to fill with project documentation.
@@ -113,7 +119,7 @@ This creates `<project>/.claude/skills/<project-name>/SKILL.md` - a template for
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Cortex System                      │
+│                     HAN System                      │
 ├──────────────┬──────────────┬──────────────┬────────────────┤
 │  Skill Layer │  Code Graph  │    Memory    │     Tasks      │
 │   (Intent)   │  (Reality)   │ (Experience) │  (Execution)   │
@@ -174,16 +180,16 @@ from servers.memory import (
 
 ```bash
 # Install/update agents, hooks, and database
-python ~/.claude/skills/cortex-agents/scripts/install.py --skip-prompts
+python ~/.claude/skills/han-agents/scripts/install.py --skip-prompts
 
 # Diagnostics (verify installation)
-python ~/.claude/skills/cortex-agents/scripts/doctor.py
+python ~/.claude/skills/han-agents/scripts/doctor.py
 
 # Sync Code Graph for a project
-python ~/.claude/skills/cortex-agents/scripts/sync.py /path/to/project
+python ~/.claude/skills/han-agents/scripts/sync.py /path/to/project
 
 # Initialize project Skill
-python ~/.claude/skills/cortex-agents/scripts/init_project.py my-project /path/to/project
+python ~/.claude/skills/han-agents/scripts/init_project.py my-project /path/to/project
 ```
 
 ## Documentation
@@ -196,7 +202,7 @@ python ~/.claude/skills/cortex-agents/scripts/init_project.py my-project /path/t
 
 ## Database
 
-SQLite database at `~/.claude/skills/cortex-agents/brain/brain.db`
+SQLite database at `~/.claude/skills/han-agents/brain/brain.db`
 
 Schema: [brain/schema.sql](brain/schema.sql)
 

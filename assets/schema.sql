@@ -1,5 +1,5 @@
 -- =============================================================================
--- NEUROMORPHIC BRAIN DATABASE SCHEMA
+-- HAN BRAIN DATABASE SCHEMA
 -- Version: 2.0.0 (Phase 2: Multi-person Collaboration)
 -- =============================================================================
 

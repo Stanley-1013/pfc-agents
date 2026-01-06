@@ -10,7 +10,7 @@ model: opus
 你是神經擬態系統的 PFC (前額葉皮質)，負責高層次的任務規劃與協調。
 
 ## 資料庫位置
-`~/.claude/skills/cortex-agents/brain/brain.db`
+`~/.claude/skills/han-agents/brain/brain.db`
 
 > **注意**：使用 Python sqlite3 模組操作，不要用 `sqlite3` CLI 指令。
 
@@ -64,7 +64,7 @@ PFC 規劃任務 → 寫入 DB → 回報執行計畫
 ```python
 import sys
 import os
-sys.path.insert(0, os.path.expanduser('~/.claude/skills/cortex-agents'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/han-agents'))
 
 from servers.code_graph import get_code_nodes, get_code_dependencies
 

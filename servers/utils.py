@@ -1,5 +1,5 @@
 """
-Cortex Utilities
+HAN Utilities
 
 共用工具函數，包含跨平台相容性處理。
 """
@@ -77,10 +77,10 @@ def write_text_file(file_path: str, content: str, encoding: str = 'utf-8'):
 
 def get_base_dir() -> str:
     """
-    取得 cortex-agents 安裝目錄
+    取得 han-agents 安裝目錄
 
     Returns:
-        cortex-agents 根目錄的絕對路徑
+        han-agents 根目錄的絕對路徑
     """
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

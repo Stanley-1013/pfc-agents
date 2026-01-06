@@ -1,28 +1,30 @@
 ---
-name: cortex-agents
+name: han-agents
 description: |
   Multi-agent task system for complex tasks. Three-layer architecture (Skill + Code Graph + Memory),
   task lifecycle with validation, semantic search, drift detection. Use when: user requests PFC agent,
-  complex multi-step tasks, multi-agent coordination, or mentions cortex.
+  complex multi-step tasks, multi-agent coordination, or mentions han.
 allowed-tools: Read, Write, Bash, Glob, Grep, Task
 ---
 
-# Cortex Multi-Agent System
+# HAN-Agents
 
-> **Prerequisites**: Run `python ~/.claude/skills/cortex-agents/scripts/install.py` to install agents and hooks.
+**HAN** = **H**ierarchical **A**pproached **N**euromorphic Agents
+
+> **Prerequisites**: Run `python ~/.claude/skills/han-agents/scripts/install.py` to install agents and hooks.
 
 ## Quick Start
 
 ```python
 import sys, os
-sys.path.insert(0, os.path.expanduser('~/.claude/skills/cortex-agents'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/han-agents'))
 
 from servers.facade import get_full_context, check_drift, sync, finish_task
 from servers.tasks import create_task, create_subtask, get_task_progress
 from servers.memory import search_memory_semantic, store_memory, save_checkpoint, load_checkpoint
 ```
 
-**DB**: `~/.claude/skills/cortex-agents/brain/brain.db`
+**DB**: `~/.claude/skills/han-agents/brain/brain.db`
 
 ## Project Initialization
 
@@ -30,10 +32,10 @@ from servers.memory import search_memory_semantic, store_memory, save_checkpoint
 
 ```bash
 # macOS/Linux
-python ~/.claude/skills/cortex-agents/scripts/init_project.py <project-name> <project-path>
+python ~/.claude/skills/han-agents/scripts/init_project.py <project-name> <project-path>
 
 # Windows
-python "%USERPROFILE%\.claude\skills\cortex-agents\scripts\init_project.py" <project-name> <project-path>
+python "%USERPROFILE%\.claude\skills\han-agents\scripts\init_project.py" <project-name> <project-path>
 ```
 
 建立 `<project>/.claude/skills/<project-name>/SKILL.md` 空白模板，由 LLM 填寫專案核心文檔。
@@ -152,10 +154,10 @@ ORIGINAL_TASK_ID = "{original_task_id}"
 ## Scripts
 
 ```bash
-python ~/.claude/skills/cortex-agents/scripts/install.py        # Install/update agents & hooks
-python ~/.claude/skills/cortex-agents/scripts/doctor.py         # Diagnostics
-python ~/.claude/skills/cortex-agents/scripts/sync.py PATH      # Graph sync
-python ~/.claude/skills/cortex-agents/scripts/init_project.py   # Init project skill
+python ~/.claude/skills/han-agents/scripts/install.py        # Install/update agents & hooks
+python ~/.claude/skills/han-agents/scripts/doctor.py         # Diagnostics
+python ~/.claude/skills/han-agents/scripts/sync.py PATH      # Graph sync
+python ~/.claude/skills/han-agents/scripts/init_project.py   # Init project skill
 ```
 
 ## Reference

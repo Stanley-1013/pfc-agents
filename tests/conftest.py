@@ -1,5 +1,5 @@
 """
-Pytest Fixtures for Cortex Tests
+Pytest Fixtures for HAN Tests
 
 提供：
 - 隔離的測試資料庫
@@ -18,7 +18,7 @@ import shutil
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Schema 路徑
-SCHEMA_PATH = os.path.expanduser('~/.claude/skills/cortex-agents/brain/schema.sql')
+SCHEMA_PATH = os.path.expanduser('~/.claude/skills/han-agents/brain/schema.sql')
 
 
 # =============================================================================
@@ -64,7 +64,7 @@ def mock_db_path(test_db, monkeypatch):
     """
     Monkey-patch 所有 servers 模組使用測試資料庫
     """
-    monkeypatch.setenv('NEUROMORPHIC_DB_PATH', test_db)
+    monkeypatch.setenv('HAN_DB_PATH', test_db)
 
     # Patch 各模組的 DB 路徑（注意不同模組用不同變數名）
     import servers.graph as graph_mod

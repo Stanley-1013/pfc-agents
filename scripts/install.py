@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Cortex System - 安裝腳本
+HAN System - 安裝腳本
 
 功能：
 1. 檢查系統依賴
@@ -67,13 +67,13 @@ def check_dependencies():
     return True
 
 def install():
-    base_dir = os.path.expanduser('~/.claude/skills/cortex-agents')
+    base_dir = os.path.expanduser('~/.claude/skills/han-agents')
     agents_dir = os.path.expanduser('~/.claude/agents')
     brain_dir = os.path.join(base_dir, 'brain')
     db_path = os.path.join(brain_dir, 'brain.db')
     schema_path = os.path.join(brain_dir, 'schema.sql')
 
-    print("🧠 安裝 Cortex Multi-Agent System")
+    print("🧠 安裝 HAN-Agents")
     print("=" * 50)
 
     # 0. 依賴檢查
@@ -191,7 +191,7 @@ def ask_add_to_claude_md(base_dir, auto_confirm=False):
     """詢問是否將 PFC 系統設定加入專案的 CLAUDE.md
 
     Args:
-        base_dir: cortex 系統目錄
+        base_dir: han 系統目錄
         auto_confirm: True 時自動確認，不詢問（供非互動模式使用）
     """
     print("\n" + "=" * 50)
@@ -210,11 +210,11 @@ def ask_add_to_claude_md(base_dir, auto_confirm=False):
 
     # 要加入的設定內容
     pfc_config = '''
-## Cortex Multi-Agent 系統
+## HAN Multi-Agent 系統
 
-> **本專案使用 Cortex Multi-Agent 系統進行任務管理**
+> **本專案使用 HAN Multi-Agent 系統進行任務管理**
 >
-> 完整協作指南：`~/.claude/skills/cortex-agents/SYSTEM_GUIDE.md`
+> 完整協作指南：`~/.claude/skills/han-agents/SYSTEM_GUIDE.md`
 
 ### ⚠️ 使用規則
 
@@ -255,7 +255,7 @@ def ask_add_to_claude_md(base_dir, auto_confirm=False):
 ```python
 import sys
 import os
-sys.path.insert(0, os.path.expanduser('~/.claude/skills/cortex-agents'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/han-agents'))
 from servers.tasks import get_task_progress, create_task
 from servers.memory import search_memory, load_checkpoint
 ```
@@ -271,7 +271,7 @@ from servers.memory import search_memory, load_checkpoint
             with open(claude_md_path, 'r', encoding='utf-8') as f:
                 content = f.read()
 
-            if 'Cortex Multi-Agent' in content:
+            if 'HAN Multi-Agent' in content:
                 print("⚠️  CLAUDE.md 已包含 PFC 系統設定，跳過")
                 return
 
@@ -292,7 +292,7 @@ def ask_init_project_ssot(base_dir, auto_confirm=False):
     """詢問是否為當前專案初始化 SSOT INDEX
 
     Args:
-        base_dir: cortex 系統目錄
+        base_dir: han 系統目錄
         auto_confirm: True 時自動確認，不詢問（供非互動模式使用）
     """
     print("\n" + "=" * 50)
@@ -390,7 +390,7 @@ def ask_sync_code_graph(auto_confirm=False):
     if not auto_confirm:
         response = input("是否要同步當前專案的 Code Graph？(y/n): ").strip().lower()
         if response != 'y':
-            print("跳過。之後可執行 `cortex sync` 同步")
+            print("跳過。之後可執行 `han sync` 同步")
             return
     else:
         print("自動同步 Code Graph...")
@@ -398,7 +398,7 @@ def ask_sync_code_graph(auto_confirm=False):
     print("📊 同步 Code Graph...")
     try:
         # 動態載入 facade 模組
-        base_dir = os.path.expanduser('~/.claude/skills/cortex-agents')
+        base_dir = os.path.expanduser('~/.claude/skills/han-agents')
         sys.path.insert(0, base_dir)
         from servers.facade import sync
 
@@ -411,7 +411,7 @@ def ask_sync_code_graph(auto_confirm=False):
             print(f"⚠️  同步完成但有警告: {result.get('message', '')}")
     except Exception as e:
         print(f"❌ 同步失敗: {e}")
-        print("   請確認專案結構正確，之後可執行 `cortex sync` 重試")
+        print("   請確認專案結構正確，之後可執行 `han sync` 重試")
 
 
 def upgrade_database(db_path, schema_path):
@@ -475,7 +475,7 @@ def init_database(db_path, schema_path):
     cursor.execute('''
         INSERT INTO long_term_memory (category, title, content, importance)
         VALUES ('knowledge', 'System Initialized',
-                'Cortex Multi-Agent System 已初始化。包含 PFC, Executor, Critic, Memory, Researcher 五個 agent。',
+                'HAN-Agents 已初始化。包含 PFC, Executor, Critic, Memory, Researcher 五個 agent。',
                 10)
     ''')
 
@@ -485,7 +485,7 @@ def init_database(db_path, schema_path):
 
 def reset_database():
     """強制重置資料庫（謹慎使用）"""
-    base_dir = os.path.expanduser('~/.claude/skills/cortex-agents')
+    base_dir = os.path.expanduser('~/.claude/skills/han-agents')
     brain_dir = os.path.join(base_dir, 'brain')
     db_path = os.path.join(brain_dir, 'brain.db')
     schema_path = os.path.join(brain_dir, 'schema.sql')
@@ -503,7 +503,7 @@ def reset_database():
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='Cortex System 安裝腳本')
+    parser = argparse.ArgumentParser(description='HAN System 安裝腳本')
     parser.add_argument('--reset', action='store_true', help='重置資料庫（需手動確認，無法非互動）')
     parser.add_argument('--add-claude-md', action='store_true', help='自動加入 CLAUDE.md 設定')
     parser.add_argument('--init-ssot', action='store_true', help='自動初始化專案 SSOT INDEX')

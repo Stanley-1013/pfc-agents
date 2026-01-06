@@ -1,4 +1,4 @@
-# Cortex 架構總覽
+# HAN 架構總覽
 
 > **維護者必讀**：理解系統設計理念，確保修改不破壞整體架構。
 
@@ -140,7 +140,7 @@ raise Exception("node not found")
 # ✅ 好
 raise NodeNotFoundError(
     f"Node '{node_id}' not found.\n\n"
-    f"Did you run 'cortex sync' after git pull?\n"
+    f"Did you run 'han sync' after git pull?\n"
 )
 ```
 
@@ -249,7 +249,7 @@ register_node_kind('component', '元件', 'React/Vue 元件')
 ## 目錄結構
 
 ```
-~/.claude/cortex/                # Skill 根目錄
+~/.claude/han/                # Skill 根目錄
 ├── SKILL.md                 # Skill 入口（按 Heading 組織連結）
 ├── reference/               # 參考文檔
 │   ├── ARCHITECTURE.md      # 本文檔
@@ -368,7 +368,7 @@ brain/brain.db            # 包含：
 
 ```
 你的機器
-├── ~/.claude/skills/cortex-agents/brain/brain.db     # 你的記憶
+├── ~/.claude/skills/han-agents/brain/brain.db     # 你的記憶
 └── ~/your-project/brain/ssot/                # 本地 SSOT
 ```
 
@@ -382,7 +382,7 @@ Git Repository (共享)
 └── brain/ssot/           # SSOT 由 Git 管理
 
 每個人的機器
-└── ~/.claude/skills/cortex-agents/brain/brain.db     # 各自的記憶
+└── ~/.claude/skills/han-agents/brain/brain.db     # 各自的記憶
 ```
 
 **關鍵實踐：**

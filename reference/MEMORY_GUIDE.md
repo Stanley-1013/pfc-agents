@@ -6,7 +6,7 @@
 
 ```python
 import sys, os
-sys.path.insert(0, os.path.expanduser('~/.claude/skills/cortex-agents'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/han-agents'))
 
 from servers.memory import (
     # Search

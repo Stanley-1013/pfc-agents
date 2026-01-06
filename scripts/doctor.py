@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Cortex Doctor (Simplified)
+HAN Doctor (Simplified)
 
 診斷系統狀態，確保各組件正確運作。
 
@@ -106,7 +106,7 @@ def check_database() -> DiagnosticResult:
                 name="Database",
                 status=Status.WARNING,
                 message=f"Missing tables: {', '.join(missing)}",
-                fix_hint="Run: python ~/.claude/skills/cortex-agents/scripts/install.py"
+                fix_hint="Run: python ~/.claude/skills/han-agents/scripts/install.py"
             )
 
         return DiagnosticResult(
@@ -188,7 +188,7 @@ def check_code_graph() -> DiagnosticResult:
                 name="Code Graph",
                 status=Status.WARNING,
                 message="Code Graph is empty",
-                fix_hint="Run: python ~/.claude/skills/cortex-agents/scripts/sync.py"
+                fix_hint="Run: python ~/.claude/skills/han-agents/scripts/sync.py"
             )
 
         return DiagnosticResult(
@@ -236,7 +236,7 @@ def print_results(results: List[DiagnosticResult]) -> int:
     }
 
     print("=" * 50)
-    print("🧠 Cortex System Diagnostics")
+    print("🧠 HAN System Diagnostics")
     print("=" * 50)
     print()
 

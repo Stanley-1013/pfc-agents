@@ -14,10 +14,10 @@ import os
 import re
 from datetime import datetime
 
-# 加入 cortex 路徑
-sys.path.insert(0, os.path.expanduser('~/.claude/skills/cortex-agents'))
+# 加入 han 路徑
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/han-agents'))
 
-LOG_PATH = os.path.expanduser("~/.claude/skills/cortex-agents/hooks/hook.log")
+LOG_PATH = os.path.expanduser("~/.claude/skills/han-agents/hooks/hook.log")
 
 
 def log(msg: str):

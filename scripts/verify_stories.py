@@ -92,7 +92,7 @@ def verify_story_1_2(v: StoryVerifier):
 
     # 1. Schema 存在
     def check_schema():
-        schema_path = os.path.expanduser('~/.claude/skills/cortex-agents/brain/schema.sql')
+        schema_path = os.path.expanduser('~/.claude/skills/han-agents/brain/schema.sql')
         if not os.path.exists(schema_path):
             return False, "schema.sql not found"
         with open(schema_path, encoding='utf-8') as f:
@@ -107,7 +107,7 @@ def verify_story_1_2(v: StoryVerifier):
 
     # 2. Database 存在且可連接
     def check_database():
-        db_path = os.path.expanduser('~/.claude/skills/cortex-agents/brain/brain.db')
+        db_path = os.path.expanduser('~/.claude/skills/han-agents/brain/brain.db')
         if not os.path.exists(db_path):
             return False, "brain.db not found"
         conn = sqlite3.connect(db_path)
@@ -226,7 +226,7 @@ def verify_story_7_9(v: StoryVerifier):
     # 8. Extractor 功能
     def check_extraction():
         from tools.code_graph_extractor import extract_from_file
-        result = extract_from_file(os.path.expanduser('~/.claude/skills/cortex-agents/servers/memory.py'))
+        result = extract_from_file(os.path.expanduser('~/.claude/skills/han-agents/servers/memory.py'))
         if result.errors:
             return False, f"Errors: {result.errors}"
         if not result.nodes:
@@ -240,7 +240,7 @@ def verify_story_7_9(v: StoryVerifier):
         from servers.code_graph import sync_from_directory, get_code_graph_stats, SCHEMA
         if not SCHEMA:
             return False, "SCHEMA not defined"
-        stats = get_code_graph_stats("cortex")
+        stats = get_code_graph_stats("han")
         return True, f"{stats['node_count']} nodes in graph"
 
     v.print_result(v.test(9, "Code Graph Server", check_code_graph_server))
@@ -254,7 +254,7 @@ def verify_story_10_12(v: StoryVerifier):
 
     for i, agent in enumerate(agents, 10):
         def check_agent(a=agent):
-            path = os.path.expanduser(f'~/.claude/skills/cortex-agents/agents/{a}.md')
+            path = os.path.expanduser(f'~/.claude/skills/han-agents/agents/{a}.md')
             if not os.path.exists(path):
                 return False, f"{a}.md not found"
             with open(path, encoding='utf-8') as f:
@@ -280,11 +280,11 @@ def verify_story_13_14(v: StoryVerifier):
     # 13. CLI 存在（檢查多個可能位置）
     def check_cli():
         cli_paths = [
-            os.path.expanduser('~/.claude/skills/cortex-agents/cli/pfc.py'),
-            os.path.expanduser('~/.claude/skills/cortex-agents/cli/main.py'),
-            os.path.expanduser('~/.claude/skills/cortex-agents/scripts/pfc.sh'),
+            os.path.expanduser('~/.claude/skills/han-agents/cli/pfc.py'),
+            os.path.expanduser('~/.claude/skills/han-agents/cli/main.py'),
+            os.path.expanduser('~/.claude/skills/han-agents/scripts/pfc.sh'),
         ]
-        cli_dir = os.path.expanduser('~/.claude/skills/cortex-agents/cli/')
+        cli_dir = os.path.expanduser('~/.claude/skills/han-agents/cli/')
         if os.path.isdir(cli_dir):
             files = os.listdir(cli_dir)
             if files:
@@ -321,7 +321,7 @@ def verify_story_15(v: StoryVerifier):
         from servers.facade import get_full_context
         # get_full_context 需要 branch 參數
         branch = {"stories": ["S01"]}
-        result = get_full_context(branch, "cortex")
+        result = get_full_context(branch, "han")
         if isinstance(result, str):
             # 可能返回錯誤字串
             if 'error' in result.lower():
@@ -338,7 +338,7 @@ def verify_story_15(v: StoryVerifier):
     def check_format_context():
         from servers.facade import format_context_for_agent, get_full_context
         branch = {"stories": ["S01"]}
-        ctx = get_full_context(branch, "cortex")
+        ctx = get_full_context(branch, "han")
         # format_context_for_agent 只接受 context 參數
         if isinstance(ctx, dict):
             formatted = format_context_for_agent(ctx)
@@ -364,7 +364,7 @@ def verify_story_16(v: StoryVerifier):
         result = validate_with_graph(
             modified_files=["servers/memory.py"],
             branch={"flow_id": "test"},
-            project_name="cortex"
+            project_name="han"
         )
         if isinstance(result, dict):
             if 'error' in result:
@@ -379,7 +379,7 @@ def verify_story_16(v: StoryVerifier):
         validation = validate_with_graph(
             modified_files=["test.py"],
             branch={"flow_id": "test"},
-            project_name="cortex"
+            project_name="han"
         )
         if isinstance(validation, dict):
             report = format_validation_report(validation)
@@ -398,7 +398,7 @@ def verify_story_17(v: StoryVerifier):
 
     # Agent prompt
     def check_drift_agent():
-        path = os.path.expanduser('~/.claude/skills/cortex-agents/agents/drift-detector.md')
+        path = os.path.expanduser('~/.claude/skills/han-agents/agents/drift-detector.md')
         if not os.path.exists(path):
             return False, "drift-detector.md not found"
         with open(path, encoding='utf-8') as f:
@@ -415,7 +415,7 @@ def verify_story_17(v: StoryVerifier):
         if not SCHEMA:
             return False, "SCHEMA not defined"
         # 使用 get_drift_summary 而非 check_drift
-        summary = get_drift_summary("cortex")
+        summary = get_drift_summary("han")
         if not summary:
             return False, "Empty summary"
         return True, f"Drift summary: {len(summary)} chars"
@@ -425,7 +425,7 @@ def verify_story_17(v: StoryVerifier):
     # Facade integration
     def check_facade_drift():
         from servers.facade import check_drift
-        result = check_drift("cortex")
+        result = check_drift("han")
         if isinstance(result, dict) and 'error' in result:
             # 可以接受有錯誤但 API 存在
             return True, f"API exists (returned: {result.get('error', '')[:50]})"
@@ -444,7 +444,7 @@ def verify_additional(v: StoryVerifier):
 
     for agent in ['memory', 'researcher', 'drift-detector']:
         def check_agent(a=agent):
-            path = os.path.expanduser(f'~/.claude/skills/cortex-agents/agents/{a}.md')
+            path = os.path.expanduser(f'~/.claude/skills/han-agents/agents/{a}.md')
             if not os.path.exists(path):
                 return False, f"{a}.md not found"
             with open(path, encoding='utf-8') as f:
@@ -466,7 +466,7 @@ def main():
     args = parser.parse_args()
 
     print("=" * 60)
-    print("Cortex Multi-Agent System - Story 驗證")
+    print("HAN-Agents - Story 驗證")
     print("=" * 60)
 
     v = StoryVerifier(verbose=args.verbose)
