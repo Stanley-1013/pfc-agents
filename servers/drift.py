@@ -31,11 +31,26 @@ from datetime import datetime, timedelta
 SCHEMA = """
 === Drift Detection API ===
 
-detect_all_drifts(project, project_dir) -> DriftReport
-    偵測專案所有 Skill-Code 偏差
+get_drift_context(project, project_dir) -> Dict
+    取得 Drift 偵測所需的 context 資料（供 Drift Agent 使用）
     Args:
         project: 專案名稱（用於 Code Graph 查詢）
         project_dir: 專案目錄路徑（用於讀取專案 Skill）
+    Returns: {
+        'skill_content': str,       # SKILL.md 完整內容
+        'skill_links': {            # parse_skill_links() 結果
+            'links': [...],         # 所有連結
+            'sections': {...}       # 按 heading 分組
+        },
+        'code_nodes': [...],        # Code Graph 節點
+        'code_files': [...],        # 檔案節點
+        'code_stats': {...},        # Code Graph 統計
+        'error': str | None
+    }
+
+detect_all_drifts(project, project_dir) -> DriftReport
+    基本存在性檢查（檔案連結是否有效）
+    深入語義分析應由 Drift Agent 執行
     Returns: {
         'has_drift': bool,
         'drift_count': int,
@@ -43,10 +58,6 @@ detect_all_drifts(project, project_dir) -> DriftReport
         'summary': str,
         'checked_at': datetime
     }
-
-detect_flow_drift(project, flow_name, project_dir) -> DriftReport
-    偵測特定 Flow 的偏差
-    Returns: 同上
 
 detect_coverage_gaps(project) -> List[CoverageGap]
     偵測測試覆蓋缺口
@@ -114,21 +125,93 @@ class DriftReport:
 # Detection Logic
 # =============================================================================
 
-def detect_all_drifts(project: str, project_dir: str) -> DriftReport:
+def get_drift_context(project: str, project_dir: str) -> Dict:
     """
-    偵測專案所有 Skill-Code 偏差
+    取得 Drift 偵測所需的 context 資料
+
+    供 Drift Agent 使用，不做判斷，只提供資料。
+    Agent 負責判斷哪些是真正的 drift。
 
     Args:
         project: 專案名稱（用於 Code Graph 查詢）
         project_dir: 專案目錄路徑（用於讀取專案 Skill）
 
-    檢查項目：
-    1. Skill 定義的 Flow 是否有對應實作
-    2. Code 中的主要模組是否有 Skill 文檔
-    3. Skill 和 Code 的結構是否一致
+    Returns:
+        {
+            'skill_content': str,           # SKILL.md 完整內容
+            'skill_links': {...},           # parse_skill_links() 結果
+            'code_nodes': [...],            # Code Graph 節點
+            'code_files': [...],            # 檔案節點
+            'code_stats': {...},            # Code Graph 統計
+            'error': str | None             # 錯誤訊息
+        }
     """
     from servers.ssot import parse_skill_links, load_skill, find_skill_dir
     from servers.code_graph import get_code_nodes, get_code_graph_stats
+
+    result = {
+        'skill_content': '',
+        'skill_links': {'links': [], 'sections': {}},
+        'code_nodes': [],
+        'code_files': [],
+        'code_stats': {'node_count': 0, 'edge_count': 0},
+        'error': None
+    }
+
+    # 1. 確認專案 Skill 存在
+    skill_dir = find_skill_dir(project_dir)
+    if not skill_dir:
+        result['error'] = f"No Skill found in {project_dir}/.claude/skills/"
+        return result
+
+    # 2. 取得 Skill 定義
+    try:
+        skill_content = load_skill(project_dir)
+        if not skill_content:
+            result['error'] = "SKILL.md is empty"
+            return result
+
+        result['skill_content'] = skill_content
+        result['skill_links'] = parse_skill_links(skill_content)
+    except Exception as e:
+        result['error'] = f"Failed to parse Skill: {str(e)}"
+        return result
+
+    # 3. 取得 Code Graph
+    try:
+        code_nodes = get_code_nodes(project, limit=1000)
+        code_stats = get_code_graph_stats(project)
+
+        result['code_nodes'] = code_nodes
+        result['code_stats'] = code_stats
+        result['code_files'] = [n for n in code_nodes if n['kind'] == 'file']
+
+        if code_stats['node_count'] == 0:
+            result['error'] = "Code Graph is empty. Run sync first."
+    except Exception as e:
+        result['error'] = f"Failed to get Code Graph: {str(e)}"
+
+    return result
+
+
+def detect_all_drifts(project: str, project_dir: str) -> DriftReport:
+    """
+    偵測專案所有 Skill-Code 偏差（簡化版）
+
+    此函數提供基本的存在性檢查。
+    更深入的語義分析應由 Drift Agent 執行。
+
+    Args:
+        project: 專案名稱（用於 Code Graph 查詢）
+        project_dir: 專案目錄路徑（用於讀取專案 Skill）
+    """
+    context = get_drift_context(project, project_dir)
+
+    if context['error']:
+        return DriftReport(
+            has_drift=False,
+            summary=f"Cannot detect drift: {context['error']}"
+        )
 
     drifts = []
     drift_id = 0
@@ -138,142 +221,35 @@ def detect_all_drifts(project: str, project_dir: str) -> DriftReport:
         drift_id += 1
         return f"drift-{project}-{drift_id:04d}"
 
-    # 1. 確認專案 Skill 存在
+    # 基本檢查：連結指向的檔案是否存在
+    from servers.ssot import find_skill_dir
     skill_dir = find_skill_dir(project_dir)
-    if not skill_dir:
-        return DriftReport(
-            has_drift=False,
-            summary=f"Cannot detect drift: No Skill found in {project_dir}/.claude/skills/"
-        )
 
-    # 2. 取得 Skill 定義
-    try:
-        skill_content = load_skill(project_dir)
-        if not skill_content:
-            return DriftReport(
-                has_drift=False,
-                summary="Cannot detect drift: SKILL.md is empty"
-            )
-
-        skill_links = parse_skill_links(skill_content)
-        # skill_links = {'flows': [...], 'domains': [...], 'apis': [...], 'other': [...]}
-    except Exception as e:
-        return DriftReport(
-            has_drift=False,
-            summary=f"Cannot detect drift: Failed to parse Skill ({str(e)})"
-        )
-
-    # 3. 取得 Code Graph
-    code_nodes = get_code_nodes(project, limit=1000)
-    code_stats = get_code_graph_stats(project)
-
-    if code_stats['node_count'] == 0:
-        return DriftReport(
-            has_drift=False,
-            summary="Cannot detect drift: Code Graph is empty. Run sync first."
-        )
-
-    code_files = [n for n in code_nodes if n['kind'] == 'file']
-    code_file_paths = set(n['file_path'] for n in code_files)
-
-    # 4. 檢查 Flow → 實作
-    for flow in skill_links.get('flows', []):
-        flow_path = flow.get('path', '')
-        flow_name = os.path.basename(flow_path).replace('.md', '').lower()
-
-        # 正規化名稱（處理 - 和 _ 的差異）
-        flow_name_normalized = flow_name.replace('-', '_').replace('.', '_')
-        flow_name_parts = set(flow_name.replace('-', ' ').replace('_', ' ').split())
-
-        # 用啟發式匹配尋找對應實作
-        has_impl = False
-        matched_files = []
-
-        for file_path in code_file_paths:
-            file_name = os.path.basename(file_path).lower()
-            file_stem = os.path.splitext(file_name)[0]
-            file_stem_normalized = file_stem.replace('-', '_').replace('.', '_')
-
-            # 正規化後匹配
-            if flow_name_normalized in file_stem_normalized or file_stem_normalized in flow_name_normalized:
-                has_impl = True
-                matched_files.append(file_path)
-            # 部分名稱匹配（至少 2 個詞相符）
-            elif len(flow_name_parts) >= 2:
-                file_parts = set(file_stem.replace('-', ' ').replace('_', ' ').split())
-                common = flow_name_parts & file_parts
-                if len(common) >= min(2, len(flow_name_parts)):
-                    has_impl = True
-                    matched_files.append(file_path)
-            # 路徑包含
-            elif flow_name_normalized in file_path.lower().replace('-', '_'):
-                has_impl = True
-                matched_files.append(file_path)
-
-        if not has_impl:
-            drifts.append(DriftItem(
-                id=make_drift_id(),
-                type='missing_implementation',
-                severity='high',
-                ssot_item=flow_path,
-                description=f"Flow '{flow['name']}' defined in Skill but no matching code files found",
-                suggestion=f"Create implementation file or update Skill if flow was removed"
-            ))
-
-    # 5. 檢查 Code → Skill 文檔
-    # 找出重要的 Code 模組（api/, routes/, controllers/, services/）
-    important_patterns = ['api/', 'routes/', 'controllers/', 'services/', 'handlers/']
-
-    # 建立 Skill 已文檔化的檔案列表
-    skill_documented_names = set()
-    for flow in skill_links.get('flows', []):
-        name = os.path.basename(flow['path']).replace('.md', '').lower()
-        skill_documented_names.add(name)
-
-    for code_file in code_files:
-        file_path = code_file.get('file_path', '')
-
-        # 檢查是否是重要模組
-        is_important = any(p in file_path for p in important_patterns)
-        if not is_important:
+    for link in context['skill_links'].get('links', []):
+        path = link.get('path', '')
+        if not path:
             continue
 
-        # 提取檔案名稱
-        file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
+        # 檢查檔案是否存在（相對於 skill_dir）
+        full_path = os.path.join(skill_dir, path)
+        if not os.path.exists(full_path):
+            # 也嘗試相對於 project_dir
+            alt_path = os.path.join(project_dir, path)
+            if not os.path.exists(alt_path):
+                drifts.append(DriftItem(
+                    id=make_drift_id(),
+                    type='missing_file',
+                    severity='medium',
+                    ssot_item=path,
+                    description=f"Link '{link['name']}' points to non-existent file: {path}",
+                    suggestion=f"Create the file or update the link in SKILL.md"
+                ))
 
-        # 檢查 Skill 是否有對應文檔
-        has_spec = file_name in skill_documented_names
-
-        # 也檢查模糊匹配
-        if not has_spec:
-            for doc_name in skill_documented_names:
-                if file_name in doc_name or doc_name in file_name:
-                    has_spec = True
-                    break
-
-        if not has_spec:
-            drifts.append(DriftItem(
-                id=make_drift_id(),
-                type='missing_spec',
-                severity='medium',
-                code_item=file_path,
-                description=f"Code file '{file_path}' exists but no Skill spec found",
-                suggestion=f"Add flow spec in .claude/skills/<project>/flows/{file_name}.md"
-            ))
-
-    # 6. 建立報告
-    summary_parts = []
+    # 建立報告
     if drifts:
-        by_type = {}
-        for d in drifts:
-            by_type[d.type] = by_type.get(d.type, 0) + 1
-
-        for t, count in sorted(by_type.items()):
-            summary_parts.append(f"{count} {t}")
-
-        summary = f"Found {len(drifts)} drift(s): " + ", ".join(summary_parts)
+        summary = f"Found {len(drifts)} broken link(s). Run Drift Agent for deeper analysis."
     else:
-        summary = "No drift detected. Skill and Code are in sync."
+        summary = "No broken links. Run Drift Agent for semantic drift detection."
 
     return DriftReport(
         has_drift=len(drifts) > 0,

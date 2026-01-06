@@ -82,8 +82,9 @@ def find_skill_dir(project_dir: str) -> Optional[str]:
     尋找專案的 Skill 目錄
 
     搜尋順序：
-    1. <project>/.claude/skills/<name>/SKILL.md（新格式）
-    2. <project>/.claude/pfc/INDEX.md（舊格式，向下相容）
+    1. <project>/SKILL.md（根目錄，skill 套件自身的情況）
+    2. <project>/.claude/skills/<name>/SKILL.md（新格式）
+    3. <project>/.claude/pfc/INDEX.md（舊格式，向下相容）
 
     Args:
         project_dir: 專案目錄
@@ -91,6 +92,11 @@ def find_skill_dir(project_dir: str) -> Optional[str]:
     Returns:
         Skill 目錄路徑，如果不存在返回 None
     """
+    # 根目錄 SKILL.md（skill 套件自身）
+    root_skill = os.path.join(project_dir, "SKILL.md")
+    if os.path.exists(root_skill):
+        return project_dir
+
     # 新格式：.claude/skills/<name>/
     skills_base = os.path.join(project_dir, ".claude", "skills")
     if os.path.exists(skills_base):
@@ -266,25 +272,49 @@ def load_api_spec(api_name: str, project_dir: str) -> str:
 # Skill 解析
 # =============================================================================
 
-def parse_skill_links(skill_content: str) -> Dict[str, List[Dict]]:
+def parse_skill_links(skill_content: str) -> Dict[str, any]:
     """
     從 SKILL.md 解析 Markdown 連結
 
     提取格式：[name](path) - description
 
+    返回結構化資料供 Agent 判斷使用，不做硬編碼分類。
+
     Returns:
         {
-            'flows': [{'name': 'Auth Flow', 'path': 'flows/auth.md', 'description': '...'}, ...],
-            'domains': [...],
-            'apis': [...]
+            'links': [
+                {'name': 'API Reference', 'path': 'reference/API.md', 'description': '...', 'section': '## Reference'},
+                ...
+            ],
+            'sections': {
+                '## Reference': [link1, link2, ...],
+                '## 功能模組': [link3, ...],
+                ...
+            }
         }
     """
-    result = {
-        'flows': [],
-        'domains': [],
-        'apis': [],
-        'other': []
-    }
+    links = []
+    sections = {}
+
+    # 先找出所有 section headings 的位置
+    section_pattern = r'^(#{1,3}\s+.+)$'
+    section_positions = []
+    for match in re.finditer(section_pattern, skill_content, re.MULTILINE):
+        section_positions.append({
+            'heading': match.group(1).strip(),
+            'start': match.start(),
+            'end': match.end()
+        })
+
+    def get_section_for_position(pos: int) -> str:
+        """找出某個位置屬於哪個 section"""
+        current_section = ""
+        for sec in section_positions:
+            if sec['start'] <= pos:
+                current_section = sec['heading']
+            else:
+                break
+        return current_section
 
     # 匹配 Markdown 連結：[text](path) 或 [text](path) - description
     link_pattern = r'\[([^\]]+)\]\(([^)]+)\)(?:\s*[-–—]\s*(.+))?'
@@ -294,23 +324,30 @@ def parse_skill_links(skill_content: str) -> Dict[str, List[Dict]]:
         path = match.group(2).strip()
         description = match.group(3).strip() if match.group(3) else ""
 
+        # 跳過外部連結
+        if path.startswith('http://') or path.startswith('https://'):
+            continue
+
+        section = get_section_for_position(match.start())
+
         link_info = {
             'name': name,
             'path': path,
-            'description': description
+            'description': description,
+            'section': section
         }
 
-        # 根據路徑分類
-        if path.startswith('flows/'):
-            result['flows'].append(link_info)
-        elif path.startswith('domains/'):
-            result['domains'].append(link_info)
-        elif path.startswith('apis/'):
-            result['apis'].append(link_info)
-        elif path.endswith('.md'):
-            result['other'].append(link_info)
+        links.append(link_info)
 
-    return result
+        # 同時按 section 分組（供 Agent 參考）
+        if section not in sections:
+            sections[section] = []
+        sections[section].append(link_info)
+
+    return {
+        'links': links,
+        'sections': sections
+    }
 
 
 def parse_index(project_dir: Optional[str] = None) -> Dict[str, List[Dict]]:

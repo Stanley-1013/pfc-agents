@@ -347,9 +347,9 @@ def status(project_path: str = None, project_name: str = None) -> Dict:
         try:
             skill_content = load_skill(project_path)
             links = parse_skill_links(skill_content)
-            skill['flow_count'] = len(links.get('flows', []))
-            skill['domain_count'] = len(links.get('domains', []))
-            skill['api_count'] = len(links.get('apis', []))
+            # 新格式：links 是 flat list，按 section 分組
+            skill['link_count'] = len(links.get('links', []))
+            skill['section_count'] = len(links.get('sections', {}))
         except:
             pass
     else:
@@ -992,9 +992,11 @@ def sync_skill_graph(project_path: str = None, project_name: str = None) -> Dict
 
     # 解析 SKILL.md 連結
     skill_content = load_skill(project_path)
-    skill_links = parse_skill_links(skill_content)
+    parsed = parse_skill_links(skill_content)
+    links = parsed.get('links', [])
+    sections = parsed.get('sections', {})
 
-    if not skill_links:
+    if not links:
         return {
             'project_name': project_name,
             'project_path': project_path,
@@ -1006,8 +1008,22 @@ def sync_skill_graph(project_path: str = None, project_name: str = None) -> Dict
             'message': 'SKILL.md has no links defined'
         }
 
+    # 轉換為 sync_from_index 期望的格式
+    # 所有連結都當作 'doc' 類型
+    index_data = {
+        'docs': [
+            {
+                'id': f"doc.{link['name'].lower().replace(' ', '_').replace('.', '_')}",
+                'name': link['name'],
+                'path': link['path'],
+                'section': link.get('section', '')
+            }
+            for link in links
+        ]
+    }
+
     # 同步到 Graph
-    result = sync_from_index(project_name, skill_links)
+    result = sync_from_index(project_name, index_data)
 
     # 取得最終統計
     stats = get_graph_stats(project_name)
@@ -1017,7 +1033,7 @@ def sync_skill_graph(project_path: str = None, project_name: str = None) -> Dict
         'project_path': project_path,
         'nodes_added': result['nodes_added'],
         'edges_added': result['edges_added'],
-        'types_found': list(skill_links.keys()),
+        'types_found': list(sections.keys()),  # 返回 section 名稱
         'total_nodes': stats['node_count'],
         'total_edges': stats['edge_count']
     }
