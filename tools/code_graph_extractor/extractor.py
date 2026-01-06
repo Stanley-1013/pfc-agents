@@ -585,8 +585,20 @@ def extract_from_file(file_path: str) -> ExtractionResult:
         )
 
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+        # Try UTF-8 first, then fallback to other encodings
+        content = None
+        for encoding in ['utf-8', 'utf-8-sig', 'latin-1']:
+            try:
+                with open(file_path, 'r', encoding=encoding) as f:
+                    content = f.read()
+                break
+            except UnicodeDecodeError:
+                continue
+        if content is None:
+            return ExtractionResult(
+                file_path=file_path,
+                errors=[f"Failed to decode file with supported encodings: {file_path}"]
+            )
     except Exception as e:
         return ExtractionResult(
             file_path=file_path,
