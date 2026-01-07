@@ -116,15 +116,18 @@ PROJECT_PATH = "{project_path}"
 任務：{user_request}
 
 **要求：**
-1. 分析任務範圍，使用 Code Graph 確認相關檔案
-2. 規劃子任務 DAG
-3. **必須呼叫 create_task() 將任務寫入 DB**
-4. 輸出派發指令供主對話執行
+1. 先執行 sync(PROJECT_PATH, PROJECT) 同步 Code Graph
+2. 分析任務範圍，使用 Code Graph 確認相關檔案
+3. 規劃子任務 DAG
+4. **必須呼叫 create_task() 將任務寫入 DB**
+5. 輸出派發指令供主對話執行
 '''
 )
 ```
 
-> ⚠️ **重點**：prompt 必須明確要求 PFC 「呼叫 create_task() 將任務寫入 DB」，否則 PFC 可能只輸出規劃文字而不建立任務
+> ⚠️ **必要參數**：
+> - `PROJECT` 和 `PROJECT_PATH` 是必填，供 agent 執行 `sync()` 和 `create_task()` 使用
+> - prompt 必須明確要求 PFC 「呼叫 create_task() 將任務寫入 DB」，否則 PFC 可能只輸出規劃文字而不建立任務
 
 **⭐ 派發 PFC 時的檔案範圍處理：**
 
@@ -190,11 +193,18 @@ Steps: 1. Read 2. Execute 3. Verify'''
 ```
 Task(
     subagent_type='critic',
-    prompt=f'''TASK_ID = "{critic_task_id}"
+    prompt=f'''PROJECT = "{project_name}"
+PROJECT_PATH = "{project_path}"
+TASK_ID = "{critic_task_id}"
 ORIGINAL_TASK_ID = "{original_task_id}"
-驗證任務產出...'''
+
+**要求：**
+1. 先執行 sync(PROJECT_PATH, PROJECT) 同步 Code Graph（確保驗證最新狀態）
+2. 驗證任務產出...'''
 )
 ```
+
+> ⚠️ Critic 也需要 `PROJECT_PATH`，因為 Executor 可能修改了檔案，需要 sync 後才能正確驗證
 
 ## Scripts
 
