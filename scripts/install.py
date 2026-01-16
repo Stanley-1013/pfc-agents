@@ -4,9 +4,14 @@ HAN System - 安裝腳本
 
 功能：
 1. 檢查系統依賴
-2. 複製 agent 定義到 ~/.claude/agents/
+2. 複製 agent 定義到對應平台的 agents 目錄
 3. 如果資料庫不存在，初始化資料庫
 4. 不會覆蓋現有資料庫（保護跨專案記憶）
+
+支援平台：
+- Claude Code: ~/.claude/skills/, ~/.claude/agents/
+- Cursor: ~/.cursor/skills/, .cursor/agents/
+- 其他平台: 只安裝 Skills，無 agents 目錄
 """
 
 import os
@@ -19,8 +24,134 @@ if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 import json
 
-def check_dependencies():
-    """檢查系統依賴"""
+
+# 平台設定
+PLATFORMS = {
+    'claude': {
+        'name': 'Claude Code',
+        'skills_dir': '~/.claude/skills',
+        'agents_dir': '~/.claude/agents',
+        'supports_agents': True,
+        'supports_hooks': True,
+    },
+    'cursor': {
+        'name': 'Cursor',
+        'skills_dir': '~/.cursor/skills',  # global
+        'agents_dir': '.cursor/agents',     # workspace-level
+        'supports_agents': True,
+        'supports_hooks': False,
+    },
+    'windsurf': {
+        'name': 'Windsurf',
+        'skills_dir': '~/.codeium/windsurf/skills',
+        'supports_agents': False,
+        'supports_hooks': False,
+    },
+    'cline': {
+        'name': 'Cline',
+        'skills_dir': '~/.cline/skills',
+        'supports_agents': False,
+        'supports_hooks': False,
+    },
+    'codex': {
+        'name': 'Codex CLI',
+        'skills_dir': '~/.codex/skills',
+        'supports_agents': False,
+        'supports_hooks': False,
+    },
+    'gemini': {
+        'name': 'Gemini CLI',
+        'skills_dir': '~/.gemini/skills',
+        'supports_agents': False,
+        'supports_hooks': False,
+    },
+    'antigravity': {
+        'name': 'Antigravity',
+        'skills_dir': '~/.gemini/antigravity/skills',
+        'supports_agents': False,
+        'supports_hooks': False,
+    },
+}
+
+
+def detect_platform():
+    """根據腳本位置自動偵測平台
+
+    Returns:
+        tuple: (platform_key, base_dir) 或 (None, base_dir) 如果無法識別
+    """
+    # 取得腳本所在的 han-agents 目錄
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(script_dir)  # scripts/ 的上層
+
+    # 從路徑中偵測平台
+    normalized_path = os.path.normpath(base_dir).replace('\\', '/')
+
+    for platform_key, config in PLATFORMS.items():
+        skills_dir = os.path.normpath(os.path.expanduser(config['skills_dir'])).replace('\\', '/')
+        if normalized_path.startswith(skills_dir):
+            return platform_key, base_dir
+
+    # 檢查是否在 workspace 層級的 skills 目錄
+    # 例如 .cursor/skills/, .windsurf/skills/, .cline/skills/
+    workspace_patterns = [
+        ('.cursor/skills', 'cursor'),
+        ('.windsurf/skills', 'windsurf'),
+        ('.cline/skills', 'cline'),
+        ('.gemini/skills', 'gemini'),
+        ('.codex/skills', 'codex'),
+        ('.agent/skills', 'antigravity'),
+    ]
+    for pattern, platform_key in workspace_patterns:
+        if pattern in normalized_path:
+            return platform_key, base_dir
+
+    # 無法識別，回傳 None
+    return None, base_dir
+
+
+def get_agents_dir(platform_key, base_dir):
+    """取得對應平台的 agents 目錄
+
+    Args:
+        platform_key: 平台識別碼
+        base_dir: han-agents 所在目錄
+
+    Returns:
+        str: agents 目錄路徑，或 None 如果該平台不支援
+    """
+    if platform_key not in PLATFORMS:
+        return None
+
+    config = PLATFORMS[platform_key]
+    if not config.get('supports_agents'):
+        return None
+
+    agents_dir = config.get('agents_dir')
+    if not agents_dir:
+        return None
+
+    # 處理 workspace-level 路徑（如 .cursor/agents）
+    if agents_dir.startswith('.'):
+        # workspace-level: 從 base_dir 往上找到 workspace root
+        # base_dir 通常是 ~/.cursor/skills/han-agents 或 .cursor/skills/han-agents
+        # 需要往上 2 層到達 .cursor/
+        workspace_root = os.path.dirname(os.path.dirname(base_dir))
+        # 檢查是否是 workspace-level 安裝
+        if os.path.basename(workspace_root).startswith('.'):
+            # 往上一層是 workspace
+            workspace_root = os.path.dirname(workspace_root)
+        return os.path.join(workspace_root, agents_dir)
+    else:
+        # global-level
+        return os.path.normpath(os.path.expanduser(agents_dir))
+
+def check_dependencies(base_dir):
+    """檢查系統依賴
+
+    Args:
+        base_dir: han-agents 所在目錄，用於檢查寫入權限
+    """
     errors = []
     warnings = []
 
@@ -38,17 +169,17 @@ def check_dependencies():
     except Exception as e:
         errors.append(f"sqlite3 模組無法使用: {e}")
 
-    # 3. 目錄權限檢查
-    claude_dir = os.path.normpath(os.path.expanduser('~/.claude'))
-    if os.path.exists(claude_dir):
-        if not os.access(claude_dir, os.W_OK):
-            errors.append(f"無寫入權限: {claude_dir}")
+    # 3. 目錄權限檢查 - 檢查 base_dir 的上層（skills 目錄）
+    skills_dir = os.path.dirname(base_dir)
+    if os.path.exists(skills_dir):
+        if not os.access(skills_dir, os.W_OK):
+            errors.append(f"無寫入權限: {skills_dir}")
     else:
         # 嘗試建立
         try:
-            os.makedirs(claude_dir, exist_ok=True)
+            os.makedirs(skills_dir, exist_ok=True)
         except Exception as e:
-            errors.append(f"無法建立目錄 {claude_dir}: {e}")
+            errors.append(f"無法建立目錄 {skills_dir}: {e}")
 
     # 回報結果
     if errors:
@@ -67,43 +198,56 @@ def check_dependencies():
     return True
 
 def install():
-    # 使用 os.path.join 確保跨平台路徑一致性
-    claude_home = os.path.normpath(os.path.expanduser('~/.claude'))
-    base_dir = os.path.join(claude_home, 'skills', 'han-agents')
-    agents_dir = os.path.join(claude_home, 'agents')
+    """安裝 HAN-Agents
+
+    自動偵測安裝平台，執行對應的安裝步驟：
+    - 所有平台：初始化資料庫
+    - Claude Code / Cursor：複製 agent 定義
+    - Claude Code：設定 PostToolUse Hook
+    """
+    # 自動偵測平台和路徑
+    platform_key, base_dir = detect_platform()
+    platform_config = PLATFORMS.get(platform_key, {})
+    platform_name = platform_config.get('name', '未知平台')
+
     brain_dir = os.path.join(base_dir, 'brain')
     db_path = os.path.join(brain_dir, 'brain.db')
     schema_path = os.path.join(brain_dir, 'schema.sql')
 
     print("🧠 安裝 HAN-Agents")
     print("=" * 50)
+    print(f"📍 偵測到平台: {platform_name}")
+    print(f"📁 安裝路徑: {base_dir}")
 
     # 0. 依賴檢查
-    check_dependencies()
+    check_dependencies(base_dir)
 
-    # 1. 確保目錄存在
-    os.makedirs(agents_dir, exist_ok=True)
-    print(f"✅ 確認 agents 目錄: {agents_dir}")
+    # 1. 複製 agent 定義（僅支援 agents 的平台）
+    agents_dir = get_agents_dir(platform_key, base_dir)
+    if agents_dir and platform_config.get('supports_agents'):
+        os.makedirs(agents_dir, exist_ok=True)
+        print(f"✅ 確認 agents 目錄: {agents_dir}")
 
-    # 2. 複製 agent 定義到 ~/.claude/agents/
-    # 來源：reference/agents/（新位置）或 agents/（舊位置）
-    source_agents = os.path.join(base_dir, 'reference', 'agents')
-    if not os.path.exists(source_agents):
-        source_agents = os.path.join(base_dir, 'agents')  # fallback 舊位置
+        # 來源：reference/agents/（新位置）或 agents/（舊位置）
+        source_agents = os.path.join(base_dir, 'reference', 'agents')
+        if not os.path.exists(source_agents):
+            source_agents = os.path.join(base_dir, 'agents')  # fallback 舊位置
 
-    if os.path.exists(source_agents):
-        installed_count = 0
-        for agent_file in os.listdir(source_agents):
-            if agent_file.endswith('.md'):
-                src = os.path.join(source_agents, agent_file)
-                dst = os.path.join(agents_dir, agent_file)
-                shutil.copy2(src, dst)
-                installed_count += 1
-        print(f"✅ 安裝 {installed_count} 個 agent 定義到 {agents_dir}")
+        if os.path.exists(source_agents):
+            installed_count = 0
+            for agent_file in os.listdir(source_agents):
+                if agent_file.endswith('.md'):
+                    src = os.path.join(source_agents, agent_file)
+                    dst = os.path.join(agents_dir, agent_file)
+                    shutil.copy2(src, dst)
+                    installed_count += 1
+            print(f"✅ 安裝 {installed_count} 個 agent 定義到 {agents_dir}")
+        else:
+            print(f"⚠️  找不到 agent 定義目錄")
     else:
-        print(f"⚠️  找不到 agent 定義目錄")
+        print(f"ℹ️  {platform_name} 不支援獨立 agents 目錄，跳過 agent 複製")
 
-    # 3. 確保 brain 目錄存在並初始化或升級資料庫
+    # 2. 確保 brain 目錄存在並初始化或升級資料庫
     os.makedirs(brain_dir, exist_ok=True)
     if os.path.exists(db_path):
         print(f"✅ 資料庫已存在: {db_path}")
@@ -112,13 +256,18 @@ def install():
     else:
         init_database(db_path, schema_path)
 
-    # 4. 設定 Claude Code Hook ⭐
-    settings_path = os.path.join(claude_home, 'settings.json')
-    setup_hooks(settings_path, base_dir)
+    # 3. 設定 Claude Code Hook（僅 Claude Code）
+    if platform_key == 'claude' and platform_config.get('supports_hooks'):
+        claude_home = os.path.dirname(os.path.dirname(base_dir))  # ~/.claude
+        settings_path = os.path.join(claude_home, 'settings.json')
+        setup_hooks(settings_path, base_dir)
+    else:
+        print(f"ℹ️  {platform_name} 不支援 Hooks，跳過 Hook 設定")
 
-    # 5. 完成
+    # 4. 完成
     print("\n" + "=" * 50)
     print("🎉 安裝完成！")
+    print(f"\n平台: {platform_name}")
     print("\n可用 Agents:")
     print("  pfc            - 任務規劃、分解子任務")
     print("  executor       - 執行單一任務")
@@ -126,11 +275,19 @@ def install():
     print("  memory         - 記憶管理")
     print("  researcher     - 資訊收集")
     print("  drift-detector - 檢測 SSOT 與 Code 偏差")
-    print("\n使用方式:")
-    print("  對 Claude Code 說：「使用 pfc agent 規劃 [任務描述]」")
 
-    # 回傳 base_dir 供後續處理
-    return base_dir
+    if platform_key == 'claude':
+        print("\n使用方式:")
+        print("  對 Claude Code 說：「使用 pfc agent 規劃 [任務描述]」")
+    elif platform_key == 'cursor':
+        print("\n使用方式:")
+        print("  使用 Cursor 的 subagent 功能調用 agent")
+    else:
+        print("\n使用方式:")
+        print("  透過 SKILL.md 中定義的 API 呼叫各項功能")
+
+    # 回傳 base_dir 和 platform_key 供後續處理
+    return base_dir, platform_key
 
 def setup_hooks(settings_path, base_dir):
     """設定 Claude Code PostToolUse Hook"""
@@ -399,8 +556,8 @@ def ask_sync_code_graph(auto_confirm=False):
 
     print("📊 同步 Code Graph...")
     try:
-        # 動態載入 facade 模組
-        base_dir = os.path.normpath(os.path.expanduser(os.path.join('~', '.claude', 'skills', 'han-agents')))
+        # 動態載入 facade 模組（使用自動偵測的路徑）
+        _, base_dir = detect_platform()
         sys.path.insert(0, base_dir)
         from servers.facade import sync
 
@@ -487,7 +644,7 @@ def init_database(db_path, schema_path):
 
 def reset_database():
     """強制重置資料庫（謹慎使用）"""
-    base_dir = os.path.normpath(os.path.expanduser(os.path.join('~', '.claude', 'skills', 'han-agents')))
+    _, base_dir = detect_platform()
     brain_dir = os.path.join(base_dir, 'brain')
     db_path = os.path.join(brain_dir, 'brain.db')
     schema_path = os.path.join(brain_dir, 'schema.sql')
@@ -519,7 +676,7 @@ if __name__ == '__main__':
         # reset 永遠需要手動確認，保護資料安全
         reset_database()
     else:
-        base_dir = install()
+        base_dir, platform_key = install()
 
         # 判斷執行模式
         if args.skip_prompts:

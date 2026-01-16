@@ -126,17 +126,32 @@ Kiro uses the **Powers** system with one-click install. Visit [kiro.dev](https:/
 
 </details>
 
-### Step 2: Run Install Script (Claude Code only)
+### Step 2: Run Install Script
 
-For Claude Code, run the install script to configure hooks and agents:
+Run the install script to initialize the database and configure your platform:
 
 ```bash
-# macOS/Linux
+# Run from your skills directory (script auto-detects platform)
+python <skills-path>/han-agents/scripts/install.py --skip-prompts
+
+# Examples:
+# Claude Code
 python ~/.claude/skills/han-agents/scripts/install.py --skip-prompts
 
-# Windows
-python "%USERPROFILE%\.claude\skills\han-agents\scripts\install.py" --skip-prompts
+# Cursor
+python ~/.cursor/skills/han-agents/scripts/install.py --skip-prompts
+
+# Windsurf (project-level)
+python .windsurf/skills/han-agents/scripts/install.py --skip-prompts
 ```
+
+The script auto-detects your platform and performs the appropriate setup:
+
+| Platform | Database | Agents | Hooks |
+|----------|----------|--------|-------|
+| Claude Code | ✅ Initialize | ✅ Copy to `~/.claude/agents/` | ✅ PostToolUse Hook |
+| Cursor | ✅ Initialize | ✅ Copy to `.cursor/agents/` | ❌ Not supported |
+| Others | ✅ Initialize | ❌ No agents directory | ❌ Not supported |
 
 Install options:
 - `--skip-prompts`: Non-interactive mode (recommended for scripts)
@@ -144,8 +159,6 @@ Install options:
 - `--add-claude-md`: Add config to project's CLAUDE.md
 - `--init-ssot`: Initialize project SSOT INDEX
 - `--sync-graph`: Sync Code Graph
-
-> **Note**: Other platforms auto-discover skills from their skills directory. No additional setup needed.
 
 ### Verify Installation
 
