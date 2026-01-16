@@ -8,41 +8,133 @@
 
 A multi-agent task system with three-layer architecture: **Skill** (intent) + **Code Graph** (reality) + **Memory** (experience).
 
-Works with any AI coding agent that supports custom skills/tools, including Claude Code, Cursor, Windsurf, Cline, and other LLM-based development tools.
+Works with any AI coding agent that supports the [Agent Skills](https://agentskills.io) standard, including Claude Code, Cursor, Windsurf, Cline, Codex CLI, Gemini CLI, Antigravity, and Kiro.
 
 ## Installation
 
-### Step 1: Clone Repository
+### Step 1: Clone to Your Platform's Skills Directory
 
-**macOS/Linux:**
+Choose your AI coding agent and clone to the appropriate location:
+
+<details>
+<summary><b>Claude Code</b></summary>
+
 ```bash
+# macOS/Linux
 git clone https://github.com/Stanley-1013/han-agents.git ~/.claude/skills/han-agents
-```
 
-**Windows (PowerShell):**
-```powershell
+# Windows (PowerShell)
 git clone https://github.com/Stanley-1013/han-agents.git "$env:USERPROFILE\.claude\skills\han-agents"
-```
 
-**Windows (CMD):**
-```cmd
+# Windows (CMD)
 git clone https://github.com/Stanley-1013/han-agents.git "%USERPROFILE%\.claude\skills\han-agents"
 ```
 
-### Step 2: Run Install Script
-
-The install script will:
-- Install agent definitions to `~/.claude/agents/`
-- Configure Claude Code hooks in `~/.claude/settings.json`
-- Initialize the database if needed
-
-**macOS/Linux:**
-```bash
-python ~/.claude/skills/han-agents/scripts/install.py --skip-prompts
+Then add to `~/.claude/settings.json`:
+```json
+{
+  "skills": ["~/.claude/skills/han-agents"]
+}
 ```
 
-**Windows:**
-```cmd
+</details>
+
+<details>
+<summary><b>Cursor</b></summary>
+
+```bash
+# macOS/Linux (global)
+git clone https://github.com/Stanley-1013/han-agents.git ~/.cursor/skills/han-agents
+
+# Windows (PowerShell)
+git clone https://github.com/Stanley-1013/han-agents.git "$env:USERPROFILE\.cursor\skills\han-agents"
+
+# Project-level
+git clone https://github.com/Stanley-1013/han-agents.git .cursor/skills/han-agents
+```
+
+</details>
+
+<details>
+<summary><b>Windsurf</b></summary>
+
+```bash
+# Project-level (recommended)
+git clone https://github.com/Stanley-1013/han-agents.git .windsurf/skills/han-agents
+```
+
+</details>
+
+<details>
+<summary><b>Cline</b></summary>
+
+```bash
+# macOS/Linux (global)
+git clone https://github.com/Stanley-1013/han-agents.git ~/.cline/skills/han-agents
+
+# Windows (PowerShell)
+git clone https://github.com/Stanley-1013/han-agents.git "$env:USERPROFILE\.cline\skills\han-agents"
+
+# Project-level
+git clone https://github.com/Stanley-1013/han-agents.git .cline/skills/han-agents
+```
+
+> **Note**: Enable Skills in Cline: Settings → Features → Enable Skills
+
+</details>
+
+<details>
+<summary><b>Codex CLI (OpenAI)</b></summary>
+
+```bash
+# macOS/Linux
+git clone https://github.com/Stanley-1013/han-agents.git ~/.codex/skills/han-agents
+
+# Windows (PowerShell)
+git clone https://github.com/Stanley-1013/han-agents.git "$env:USERPROFILE\.codex\skills\han-agents"
+```
+
+</details>
+
+<details>
+<summary><b>Gemini CLI</b></summary>
+
+```bash
+# Project-level
+git clone https://github.com/Stanley-1013/han-agents.git .gemini/skills/han-agents
+```
+
+</details>
+
+<details>
+<summary><b>Antigravity (Google)</b></summary>
+
+```bash
+# macOS/Linux (global)
+git clone https://github.com/Stanley-1013/han-agents.git ~/.gemini/antigravity/skills/han-agents
+
+# Project-level
+git clone https://github.com/Stanley-1013/han-agents.git .agent/skills/han-agents
+```
+
+</details>
+
+<details>
+<summary><b>Kiro (AWS)</b></summary>
+
+Kiro uses the **Powers** system with one-click install. Visit [kiro.dev](https://kiro.dev) and search for "han-agents", or install from GitHub URL in Kiro's Powers panel.
+
+</details>
+
+### Step 2: Run Install Script (Claude Code only)
+
+For Claude Code, run the install script to configure hooks and agents:
+
+```bash
+# macOS/Linux
+python ~/.claude/skills/han-agents/scripts/install.py --skip-prompts
+
+# Windows
 python "%USERPROFILE%\.claude\skills\han-agents\scripts\install.py" --skip-prompts
 ```
 
@@ -53,30 +145,12 @@ Install options:
 - `--init-ssot`: Initialize project SSOT INDEX
 - `--sync-graph`: Sync Code Graph
 
-### Step 3: Add Skill to Claude Code
-
-Add to `~/.claude/settings.json`:
-
-```json
-{
-  "skills": ["~/.claude/skills/han-agents"]
-}
-```
-
-> **Note**: The install script automatically configures hooks. You only need to add the skills entry.
-
-### For Other AI Agents (Cursor/Windsurf/etc.)
-
-Add the skill path to your agent's configuration, or include the import in your system prompt:
-
-```python
-import sys, os
-sys.path.insert(0, '/path/to/skills/han-agents')
-```
+> **Note**: Other platforms auto-discover skills from their skills directory. No additional setup needed.
 
 ### Verify Installation
 
 ```bash
+# Adjust path based on your platform's skills directory
 python ~/.claude/skills/han-agents/scripts/doctor.py
 ```
 
@@ -208,14 +282,29 @@ Schema: [brain/schema.sql](brain/schema.sql)
 
 ## Compatibility
 
-| Feature | Claude Code | Other AI Agents |
+### Supported Platforms
+
+| Platform | Skills Directory | Scope |
+|----------|-----------------|-------|
+| [Claude Code](https://claude.ai/code) | `~/.claude/skills/` | Global |
+| [Cursor](https://cursor.com) | `~/.cursor/skills/` or `.cursor/skills/` | Global / Project |
+| [Windsurf](https://windsurf.com) | `.windsurf/skills/` | Project |
+| [Cline](https://cline.bot) | `~/.cline/skills/` or `.cline/skills/` | Global / Project |
+| [Codex CLI](https://developers.openai.com/codex) | `~/.codex/skills/` | Global |
+| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | `.gemini/skills/` | Project |
+| [Antigravity](https://antigravity.google) | `~/.gemini/antigravity/skills/` or `.agent/skills/` | Global / Project |
+| [Kiro](https://kiro.dev) | Powers system (one-click install) | - |
+
+### Feature Support
+
+| Feature | Claude Code | Other Platforms |
 |---------|-------------|-----------------|
 | Memory & Semantic Search | ✅ Full | ✅ Full |
 | Code Graph & Drift Detection | ✅ Full | ✅ Full |
 | Task Lifecycle Management | ✅ Full | ✅ Full |
-| Multi-Agent Coordination | ✅ Native (Task tool) | ⚠️ Simulated |
+| Multi-Agent Coordination | ✅ Native (Task tool) | ⚠️ Sequential |
 
-> **Note**: Claude Code's Task tool enables true parallel agent execution with isolated contexts. Other AI tools can use all APIs but run agents sequentially in shared context.
+> **Note**: Claude Code's Task tool enables true parallel agent execution with isolated contexts. Other platforms can use all APIs but run agents sequentially in shared context.
 
 ## Requirements
 
